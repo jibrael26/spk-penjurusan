@@ -22,6 +22,10 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
     Route::get('/admin/data-siswa', [AdminController::class, 'dataSiswa'])->name('admin.siswa');
+    
+    // Route untuk fitur manajemen pertanyaan penjurusan (URL disesuaikan)
+    Route::get('/admin/questions', [AdminController::class, 'createQuestion'])->name('admin.questions.create');
+    Route::post('/admin/questions', [AdminController::class, 'storeQuestion'])->name('admin.questions.store');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
