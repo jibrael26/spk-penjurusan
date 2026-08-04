@@ -43,4 +43,14 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'Pertanyaan berhasil ditambahkan!');
     }
+
+    // PERBAIKAN DI SINI
+    public function questions()
+    {
+        // Ambil data pertanyaan dari database
+        $questions = Question::latest()->paginate(10);
+        
+        // Mengarahkan ke file resources/views/admin/questions.blade.php dan menyertakan variabel $questions
+        return view('admin.questions', compact('questions')); 
+    }
 }

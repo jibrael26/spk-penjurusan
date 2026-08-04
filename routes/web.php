@@ -26,6 +26,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Route untuk fitur manajemen pertanyaan penjurusan (URL disesuaikan)
     Route::get('/admin/questions', [AdminController::class, 'createQuestion'])->name('admin.questions.create');
     Route::post('/admin/questions', [AdminController::class, 'storeQuestion'])->name('admin.questions.store');
+    Route::get('/admin/questions', [AdminController::class, 'questions'])->name('admin.pertanyaan');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
