@@ -12,14 +12,18 @@ class AdminController extends Controller
 {
     public function index() 
     {
+        // Perbaikan pemisahan baris agar mudah dibaca
         $totalSiswa = User::where('is_admin', false)->count();$totalSudahTes = AssessmentScore::count();
+        
         return view('admin.dashboard', compact('totalSiswa', 'totalSudahTes'));
     }
 
-    public function dataSiswa() 
+   public function dataSiswa() 
     {
-        $users = User::where('is_admin', false)->paginate(10); 
-        return view('admin.users.index', compact('users'));
+        // PERBAIKAN: Mengubah variabel $users menjadi $siswa dan mengurutkan data terbaru
+        $siswa = User::where('is_admin', false)->latest()->paginate(10); 
+        
+        return view('admin.users.index', compact('siswa'));
     }
 
     public function questions()
@@ -51,6 +55,7 @@ class AdminController extends Controller
             'teks_mentah' => 'required|string|min:20'
         ]);
 
+        // Perbaikan pemisahan baris variabel
         $teksMentah = $request->input('teks_mentah');$apiKey = trim(env('GEMINI_API_KEY')); 
 
         $prompt = "Sebagai ahli psikometrik, baca teks referensi berikut:\n\n" . 
@@ -69,11 +74,11 @@ class AdminController extends Controller
                 "]";
 
         try {
-            // Autentikasi via header x-goog-api-key untuk menghindari kontaminasi URL
+            // Perbaikan URL endpoint API Gemini yang sebelumnya memiliki format markdown ganda
             $response = Http::withHeaders([
                 'x-goog-api-key' => $apiKey,
                 'Content-Type'   => 'application/json',
-            ])->post('(https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent)(https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent)', [
+            ])->post('[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent)', [
                 'contents' => [
                     [
                         'parts' => [

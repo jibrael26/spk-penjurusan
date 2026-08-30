@@ -1,20 +1,25 @@
 <?php
 
-namespace App\Http\Middleware; // Pastikan namespace ini benar
+namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 
 class AdminMiddleware
 {
+    /**
+     * Handle an incoming request.
+     */
     public function handle(Request $request, Closure $next): Response
     {
-        // Logika pengecekan is_admin sesuai tabel MySQL [cite: 314]
-        if (auth()->check() && auth()->user()->is_admin) {
+        // Pengecekan apakah user sedang login dan kolom is_admin bernilai 1 (true)
+        if (Auth::check() && Auth::user()->is_admin == 1) {
             return $next($request);
         }
 
-        return redirect('/dashboard')->with('error', 'Akses ditolak.');
+        // Jika bukan admin, lempar kembali ke dashboard user dengan session flash message
+        return redirect()->route('dashboard')->with('error', 'Akses ditolak. Halaman tersebut khusus Administrator.');
     }
 }

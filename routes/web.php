@@ -1,46 +1,58 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AssessmentController;
 use App\Http\Controllers\AdminController;
+use Illuminate\Support\Facades\Route;
 
+// ==========================================
+// 1. LANDING PAGE (Publik / Belum Login)
+// ==========================================
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('landing');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+// ==========================================
+// 2. PANEL USER / SISWA (Butuh Login & Verifikasi)
+// ==========================================
+Route::middleware(['auth', 'verified'])->group(function () {
+    
+    // Dashboard User
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+
+    // Manajemen Profil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
 
-Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::get('/admin/data-siswa', [AdminController::class, 'dataSiswa'])->name('admin.siswa');
-    
-    // Route untuk fitur manajemen pertanyaan manual
-    Route::get('/admin/questions', [AdminController::class, 'questions'])->name('admin.pertanyaan');
-    Route::post('/admin/questions', [AdminController::class, 'storeQuestion'])->name('admin.questions.store');
-    
-    // Route BARU untuk fitur Generate Pertanyaan via AI
-    Route::post('/admin/questions/generate', [AdminController::class, 'generateQuestions'])->name('admin.questions.generate');
-});
-
-Route::middleware(['auth', 'verified'])->group(function () {
-
-    // Route untuk menampilkan halaman tes
+    // Fitur Tes Penjurusan (Assessment)
     Route::get('/tes-penjurusan', [AssessmentController::class, 'index'])->name('assessment.index');
-
-    // Route untuk memproses jawaban tes
     Route::post('/tes-penjurusan/simpan', [AssessmentController::class, 'store'])->name('assessment.store');
-
-    // Route untuk melihat hasil rekomendasi
     Route::get('/tes-penjurusan/hasil/{id}', [AssessmentController::class, 'showResult'])->name('assessment.result');
+
+});
+
+
+// ==========================================
+// 3. PANEL ADMIN (Butuh Login & Status Admin)
+// ==========================================
+// Penggunaan prefix('admin') dan name('admin.') akan otomatis menambahkan 
+// awalan "admin/" pada URL dan "admin." pada nama rute di dalamnya.
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    
+    // Dashboard & Data Master
+    Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+    Route::get('/data-siswa', [AdminController::class, 'dataSiswa'])->name('siswa');
+    
+    // Fitur Manajemen Pertanyaan Manual
+    Route::get('/questions', [AdminController::class, 'questions'])->name('pertanyaan');
+    Route::post('/questions', [AdminController::class, 'storeQuestion'])->name('questions.store');
+    
+    // Fitur Generate Pertanyaan via AI
+    Route::post('/questions/generate', [AdminController::class, 'generateQuestions'])->name('questions.generate');
 
 });
 

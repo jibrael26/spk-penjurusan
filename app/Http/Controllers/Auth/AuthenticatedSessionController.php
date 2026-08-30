@@ -24,10 +24,20 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // 1. Proses validasi dan otentikasi bawaan Laravel
         $request->authenticate();
 
+        // 2. Regenerasi session untuk mencegah serangan session fixation
         $request->session()->regenerate();
 
+        // 3. LOGIKA BARU: Pengecekan Role Pengguna
+        // Cek apakah user yang login memiliki hak akses admin (is_admin == 1)
+        if ($request->user()->is_admin == 1) {
+            // Arahkan ke panel khusus admin
+            return redirect()->intended(route('admin.dashboard', absolute: false));
+        }
+
+        // Jika bukan admin (is_admin == 0 / null), arahkan ke panel siswa/user biasa
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
@@ -42,6 +52,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
+        // Setelah logout, kembalikan user ke Landing Page
         return redirect('/');
     }
 }
