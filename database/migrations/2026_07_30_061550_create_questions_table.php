@@ -10,9 +10,12 @@ return new class extends Migration
     {
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
-            $table->text('question_text');
-            // Menambahkan kolom kategori untuk mengelompokkan nilai pertanyaan ke jurusan tertentu
-            $table->string('kategori')->nullable(); // contoh isi: 'IPA', 'IPS', 'Logika', 'Hafalan'
+            $table->foreignId('criteria_id')->constrained('criteria')->onDelete('cascade');
+            $table->text('teks_pertanyaan');
+            $table->unsignedTinyInteger('fase')->default(1);
+            $table->string('tipe_opsi')->default('text');
+            $table->json('opsi_jawaban')->nullable();
+            $table->unsignedTinyInteger('bobot')->nullable();
             $table->timestamps();
         });
     }

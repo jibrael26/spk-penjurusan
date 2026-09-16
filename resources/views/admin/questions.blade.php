@@ -1,16 +1,4 @@
 <x-admin-layout>
-    <!-- Pesan Sukses -->
-    @if (session('success'))
-        <div class="mb-6 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 rounded-r-lg shadow-sm">
-            <p class="font-medium">{{ session('success') }}</p>
-        </div>
-    @endif
-    @if (session('error'))
-        <div class="mb-6 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r-lg shadow-sm">
-            <p class="font-medium">{{ session('error') }}</p>
-        </div>
-    @endif
-
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-900">Bank Soal & Integrasi AI</h1>
         <p class="mt-1 text-sm text-gray-500">Kelola instrumen penilaian untuk tes penjurusan siswa SMK Negeri 1 Tatapaan.</p>

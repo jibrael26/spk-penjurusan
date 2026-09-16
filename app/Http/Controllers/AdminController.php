@@ -14,15 +14,16 @@ class AdminController extends Controller
     public function index() 
     {
         $totalSiswa = User::where('is_admin', false)->count();
+        $totalSoal = Question::count();
         // Menghitung user unik yang sudah melakukan tes
         $totalSudahTes = AssessmentScore::distinct('user_id')->count('user_id'); 
-        return view('admin.dashboard', compact('totalSiswa', 'totalSudahTes'));
+        return view('admin.dashboard', compact('totalSiswa', 'totalSoal', 'totalSudahTes'));
     }
 
     public function dataSiswa() 
     {
-        $users = User::where('is_admin', false)->paginate(10); 
-        return view('admin.users.index', compact('users'));
+        $siswa = User::where('is_admin', false)->paginate(10); 
+        return view('admin.users.index', compact('siswa'));
     }
 
     public function questions()
