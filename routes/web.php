@@ -47,12 +47,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::get('/data-siswa', [AdminController::class, 'dataSiswa'])->name('siswa');
     
-    // Fitur Manajemen Pertanyaan Manual
+    // Fitur Manajemen Pertanyaan (Manual & AI)
     Route::get('/questions', [AdminController::class, 'questions'])->name('pertanyaan');
     Route::post('/questions', [AdminController::class, 'storeQuestion'])->name('questions.store');
-    
-    // Fitur Generate Pertanyaan via AI
     Route::post('/questions/generate', [AdminController::class, 'generateQuestions'])->name('questions.generate');
+    
+    // Fitur Aksi Tambahan: Edit & Hapus Pertanyaan
+    Route::get('/questions/{id}/edit', [AdminController::class, 'editQuestion'])->name('questions.edit');
+    Route::delete('/questions/{id}', [AdminController::class, 'destroyQuestion'])->name('questions.destroy');
 
 });
 
