@@ -13,8 +13,7 @@ class AdminController extends Controller
 {
     public function index() 
     {
-        $totalSiswa = User::where('is_admin', false)->count();
-        $totalSoal = Question::count();
+        $totalSiswa = User::where('is_admin', false)->count();$totalSoal = Question::count();
         // Menghitung user unik yang sudah melakukan tes
         $totalSudahTes = AssessmentScore::distinct('user_id')->count('user_id'); 
         return view('admin.dashboard', compact('totalSiswa', 'totalSoal', 'totalSudahTes'));
@@ -30,8 +29,7 @@ class AdminController extends Controller
     {
         // Menggunakan with('criteria') agar nama jurusan bisa ditampilkan di tabel
         $questions = Question::with('criteria')->latest()->paginate(10);
-        // Mengirim data kriteria untuk opsi dropdown saat tambah soal manual/AI
-        $criteria = Criteria::all();
+        $criteria = Criteria::all();         // Mengirim data kriteria untuk opsi dropdown saat tambah soal manual/AI$criteria = Criteria::all();
         return view('admin.questions', compact('questions', 'criteria')); 
     }
 
@@ -39,7 +37,7 @@ class AdminController extends Controller
     {
         $request->validate([
             'teks_pertanyaan' => 'required|string',
-            'criteria_id'     => 'required|exists:criteria,id',
+            'criteria_id'     => 'required|exists:criteria,id', // Pastikan nama tabelnya 'criteria'
             'fase'            => 'required|in:1,2',
         ]);
 
@@ -134,7 +132,7 @@ class AdminController extends Controller
     }
 
     // ==========================================
-    // TAMBAHAN: FITUR HAPUS DAN EDIT
+    // TAMBAHAN: FITUR HAPUS, EDIT, DAN UPDATE
     // ==========================================
 
     public function destroyQuestion($id)
@@ -151,5 +149,36 @@ class AdminController extends Controller
         $criteria = Criteria::all();
         // Akan merender halaman form edit yang akan kita buat nanti
         return view('admin.questions_edit', compact('question', 'criteria'));
+    }
+
+    // AKU MENAMBAHKAN FUNGSI INI UNTUK MENYIMPAN PERUBAHAN DARI FORM EDIT
+    public function updateQuestion(Request $request, $id)
+    {
+        $request->validate([
+            'teks_pertanyaan' => 'required|string',
+            'criteria_id'     => 'required|exists:criteria,id',
+            'fase'            => 'required|in:1,2',
+            'opsi_jawaban'    => 'nullable|array', // Validasi baru untuk input array opsi
+        ]);
+
+        $question = Question::findOrFail($id);
+
+        // Membersihkan array jika ada opsi yang dikirim kosong secara tidak sengaja
+        $opsiJawaban = $request->opsi_jawaban;
+        if (is_array($opsiJawaban)) {
+            $opsiJawaban = array_filter($opsiJawaban, function($value) {
+                return !is_null($value) && $value !== '';
+            });
+        }
+
+        $question->update([
+            'criteria_id'     => $request->criteria_id,
+            'teks_pertanyaan' => $request->teks_pertanyaan,
+            'fase'            => $request->fase,
+            // Jika tidak ada opsi yang dikirim, biarkan null. Jika ada, simpan array-nya.
+            'opsi_jawaban'    => empty($opsiJawaban) ? null : $opsiJawaban, 
+        ]);
+
+        return redirect()->route('admin.pertanyaan')->with('success', 'Pertanyaan beserta opsi jawaban berhasil diperbarui!');
     }
 }

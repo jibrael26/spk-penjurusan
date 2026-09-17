@@ -54,6 +54,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Fitur Aksi Tambahan: Edit & Hapus Pertanyaan
     Route::get('/questions/{id}/edit', [AdminController::class, 'editQuestion'])->name('questions.edit');
+    // Tambahan Route PUT untuk memproses update data dari form edit
+    Route::put('/questions/{id}', [AdminController::class, 'updateQuestion'])->name('questions.update');
     Route::delete('/questions/{id}', [AdminController::class, 'destroyQuestion'])->name('questions.destroy');
 
 });

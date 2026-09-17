@@ -7,10 +7,10 @@
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-2 group">
                         <div class="w-8 h-8 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-xl group-hover:shadow-md transition-all">
-                            S
+                            O
                         </div>
                         <span class="font-bold text-xl tracking-tight text-gray-900 group-hover:text-indigo-600 transition-colors hidden sm:block">
-                            SPK Penjurusan
+                            SMK Negeri 1 Tatapaan
                         </span>
                     </a>
                 </div>
