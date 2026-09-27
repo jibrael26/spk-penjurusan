@@ -33,6 +33,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/tes-penjurusan/simpan', [AssessmentController::class, 'store'])->name('assessment.store');
     Route::get('/tes-penjurusan/hasil/{id}', [AssessmentController::class, 'showResult'])->name('assessment.result');
 
+    // Halaman utama asesmen / dashboard hasil user
+    Route::get('/tes-penjurusan', [AssessmentController::class, 'index'])->name('assessment.index');
+    
+    // Halaman untuk menampilkan soal tes (Pastikan penamaan .name('assessment.create') ada di sini!)
+    Route::get('/tes-penjurusan/mulai', [AssessmentController::class, 'create'])->name('assessment.create');
+    
+    // Proses penyimpanan jawaban
+    Route::post('/tes-penjurusan/simpan', [AssessmentController::class, 'store'])->name('assessment.store');
+
 });
 
 
