@@ -139,7 +139,9 @@ class AssessmentController extends Controller
 
     /**
      * Menampilkan halaman lembar soal asesmen (Fase 1 & Fase 2)
-     */
+    
+    
+    */
     public function create()
     {
         $userId = auth()->id() ?? session()->getId();
@@ -172,5 +174,15 @@ class AssessmentController extends Controller
         $questions = \App\Models\Question::whereIn('id', $soalIds)->inRandomOrder()->get();
 
         return view('assessment.assessment', compact('questions'));
+    }
+
+
+   public function dashboard()
+    {
+        // Ambil data hasil tes/skor terakhir milik siswa yang sedang login
+        $latestScore = AssessmentScore::where('user_id', auth()->id())->latest()->first();
+
+        // Kirim data ke view dashboard.blade.php
+        return view('dashboard', compact('latestScore'));
     }
 }

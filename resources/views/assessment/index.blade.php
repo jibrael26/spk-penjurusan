@@ -55,9 +55,14 @@
                             </div>
                         </div>
 
-                        <div class="mt-8">
+                        <!-- Tombol Aksi Navigasi (Ulangi Tes & Kembali ke Beranda) -->
+                        <div class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
                             <a href="{{ route('assessment.create') }}" class="text-sm text-blue-600 hover:underline font-semibold">
                                 &larr; Ulangi Tes Penjurusan
+                            </a>
+                            <span class="hidden sm:inline text-gray-300">|</span>
+                            <a href="{{ url('dashboard') }}" class="px-5 py-2.5 bg-gray-800 text-white text-sm font-semibold rounded-lg shadow hover:bg-gray-700 transition-all">
+                                Kembali ke Beranda
                             </a>
                         </div>
                     </div>
@@ -68,9 +73,14 @@
                         <p class="text-gray-600 mb-6 max-w-lg mx-auto">
                             Anda belum mengikuti asesmen penjurusan. Silakan mulai tes untuk mengetahui rekomendasi jurusan terbaik berdasarkan minat dan bakat Anda.
                         </p>
-                        <a href="{{ route('assessment.create') }}" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-all">
-                            Mulai Tes Sekarang
-                        </a>
+                        <div class="flex justify-center items-center gap-4">
+                            <a href="{{ route('assessment.create') }}" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-all">
+                                Mulai Tes Sekarang
+                            </a>
+                            <a href="{{ url('/') }}" class="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg shadow-md hover:bg-gray-300 transition-all">
+                                Beranda
+                            </a>
+                        </div>
                     </div>
                 @endif
             </div>
