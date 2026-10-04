@@ -24,94 +24,132 @@ class AssessmentController extends Controller
 
     public function index()
     {
-        $userId = auth()->id() ?? session()->getId();
-        $sessionKey = 'paket_soal_cbt_' . $userId;
-
-        if (!Session::has($sessionKey)) {
-            $kriteriaList = Criteria::all();
-            $pertanyaanTerpilih = collect();
-
-            foreach ($kriteriaList as $kriteria) {
-                // Tarik 3 soal Fase 1 (Minat) per Kriteria
-                $fase1 = Question::where('criteria_id', $kriteria->id)
-                                 ->where('fase', 1)
-                                 ->inRandomOrder()->limit(3)->pluck('id');
-                                 
-                // Tarik 2 soal Fase 2 (Bakat) per Kriteria
-                $fase2 = Question::where('criteria_id', $kriteria->id)
-                                 ->where('fase', 2)
-                                 ->inRandomOrder()->limit(2)->pluck('id');
-                                 
-                $pertanyaanTerpilih = $pertanyaanTerpilih->merge($fase1)->merge($fase2);
-            }
-            
-            Session::put($sessionKey, $pertanyaanTerpilih->toArray());
-        }
-
-        $soalIds = Session::get($sessionKey);
-        $questions = Question::whereIn('id', $soalIds)->inRandomOrder()->get();
-
-        // Ambil data hasil tes terakhir milik user yang sedang login untuk ditampilkan di halaman
+        // Ambil data hasil tes terakhir milik user yang sedang login untuk ditampilkan di halaman dashboard/index
         $latestScore = AssessmentScore::where('user_id', auth()->id())->latest()->first();
 
-        return view('assessment.index', compact('questions', 'latestScore'));
+        return view('assessment.index', compact('latestScore'));
     }
     
     public function store(Request $request)
-    {
-        $request->validate([
-            'answers' => 'required|array',
-        ], [
-            'answers.required' => 'Anda harus menjawab seluruh pertanyaan terlebih dahulu.',
-        ]);
+{
+    $request->validate([
+        'answers' => 'required|array',
+    ], [
+        'answers.required' => 'Anda harus menjawab seluruh pertanyaan terlebih dahulu.',
+    ]);
 
-        $answers = $request->input('answers');
-        
-        $studentScores = [
-            'k01' => 0, 'k02' => 0, 'k03' => 0, 'k04' => 0, 'k05' => 0
+    $answers = $request->input('answers');
+    
+    $allCriteria = Criteria::all();
+    $studentScoresRaw = [];
+    $scoresPerCriteria = [];
+
+    // Inisialisasi awal skor per kriteria (K01 - K05)
+    foreach ($allCriteria as $criteria) {
+        $kode = strtolower($criteria->kode_kriteria); // contoh: 'k01', 'k02', dst.
+        $studentScoresRaw[$kode] = 0; 
+
+        $scoresPerCriteria[$criteria->id] = [
+            'nama_jurusan' => $criteria->nama_kriteria,
+            'kode_jurusan' => $kode,
+            'skor_minat'   => 0,
+            'skor_bakat'   => 0,
+            'total_skor'   => 0
         ];
-        
-        $questions = Question::with('criteria')->whereIn('id', array_keys($answers))->get();
-        
-        foreach ($questions as $question) {
-            $kodeCriteria = strtolower($question->criteria->kode_kriteria ?? '');
-            
-            if (array_key_exists($kodeCriteria, $studentScores)) {
-                $jawabanSiswa = (int) $answers[$question->id];
+    }
+    
+    // CONTOH MATRIKS BOBOT KORELASI INDIKATOR KE JURUSAN (K01 - K05)
+    // Sesuaikan bobot (1 sampai 5) seberapa besar indikator cocok dengan jurusan tertentu
+    $bobotIndikatorJurusan = [
+        'r'  => ['k01' => 5, 'k02' => 3, 'k03' => 1, 'k04' => 5, 'k05' => 2], // Realistic
+        'i'  => ['k01' => 3, 'k02' => 4, 'k03' => 4, 'k04' => 3, 'k05' => 5], // Investigative
+        'a'  => ['k01' => 2, 'k02' => 2, 'k03' => 5, 'k04' => 2, 'k05' => 4], // Artistic
+        's'  => ['k01' => 3, 'k02' => 3, 'k03' => 4, 'k04' => 1, 'k05' => 2], // Social
+        'e'  => ['k01' => 4, 'k02' => 3, 'k03' => 5, 'k04' => 2, 'k05' => 2], // Enterprising
+        'c'  => ['k01' => 2, 'k02' => 3, 'k03' => 5, 'k04' => 2, 'k05' => 3], // Conventional
+        // Indikator Bakat (CHC: Gf, Gc, Gv, Gq, Gwm, Gs)
+        'gf' => ['k01' => 3, 'k02' => 3, 'k03' => 5, 'k04' => 4, 'k05' => 5],
+        'gc' => ['k01' => 3, 'k02' => 3, 'k03' => 4, 'k04' => 2, 'k05' => 3],
+        'gv' => ['k01' => 2, 'k02' => 2, 'k03' => 3, 'k04' => 5, 'k05' => 5],
+        'gq' => ['k01' => 2, 'k02' => 3, 'k03' => 5, 'k04' => 3, 'k05' => 4],
+        'gwm'=> ['k01' => 3, 'k02' => 3, 'k03' => 4, 'k04' => 4, 'k05' => 5],
+        'gs' => ['k01' => 3, 'k02' => 3, 'k03' => 4, 'k04' => 3, 'k05' => 4],
+    ];
 
-                // PENILAIAN 2 FASE DENGAN PEMBOBOTAN DINAMIS
-                if ($question->fase == 1) {
-                    // Fase 1: Skala Likert (Minat 1-5). Diberi pengali x3 agar akumulasi poin memiliki rentang luas.
-                    $studentScores[$kodeCriteria] += ($jawabanSiswa * 3);
-                    
-                } elseif ($question->fase == 2) {
-                    // Fase 2: Pilihan Ganda (Bakat Kognitif berdasarkan Kunci Jawaban)
-                    $kunciJawaban = (int) ($question->kunci_jawaban ?? 1);
-                    
-                    if ($jawabanSiswa === $kunciJawaban) {
-                        // Jika jawaban benar, berikan bobot tinggi (misal: 15 poin)
-                        $studentScores[$kodeCriteria] += 15; 
+    $questions = Question::with('criteria')->whereIn('id', array_keys($answers))->get();
+    
+    foreach ($questions as $question) {
+        $jawabanSiswa = (int) $answers[$question->id];
+        // Ambil huruf depan indikator, misal 'R1' jadi 'r', 'Gf1' jadi 'gf'
+        $rawIndikator = strtolower(preg_replace('/[0-9]+/', '', $question->kode_indikator ?? ''));
+        
+        // Tentukan bobot poin berdasarkan jawaban siswa
+        $poinDiperoleh = 0;
+        if ($question->fase == 1) {
+            $poinDiperoleh = $jawabanSiswa; // Skala Likert 1-5
+        } elseif ($question->fase == 2) {
+            $kunciJawaban = (int) ($question->kunci_jawaban ?? 1);
+            if ($jawabanSiswa === $kunciJawaban) {
+                $poinDiperoleh = 5; // Bobot jika jawaban benar di pilihan ganda
+            }
+        }
+
+        // Distribusikan poin ke seluruh jurusan berdasarkan matriks korelasi indikator
+        if (isset($bobotIndikatorJurusan[$rawIndikator])) {
+            foreach ($bobotIndikatorJurusan[$rawIndikator] as $kodeJurusan => $pengali) {
+                $tambahSkor = $poinDiperoleh * $pengali;
+                $studentScoresRaw[$kodeJurusan] += $tambahSkor;
+
+                // Cari ID kriteria yang bersesuaian untuk rincian tampilan
+                foreach ($allCriteria as $crit) {
+                    if (strtolower($crit->kode_kriteria) === $kodeJurusan) {
+                        if ($question->fase == 1) {
+                            $scoresPerCriteria[$crit->id]['skor_minat'] += $tambahSkor;
+                        } else {
+                            $scoresPerCriteria[$crit->id]['skor_bakat'] += $tambahSkor;
+                        }
                     }
                 }
             }
         }
-
-        // Jalankan Algoritma K-Means (Euclidean Distance)
-        $recommendedCluster = $this->calculateKMeans($studentScores);
-
-        // Simpan ke database
-        AssessmentScore::create(array_merge(
-            ['user_id' => auth()->id()],
-            $studentScores,
-            ['recommended_cluster' => $recommendedCluster]
-        ));
-
-        // Bersihkan session ujian
-        $userId = auth()->id() ?? session()->getId();
-        Session::forget('paket_soal_cbt_' . $userId);
-
-        return redirect()->route('assessment.index')->with('success', 'Analisis K-Means berhasil! Rekomendasi jurusan Anda telah diperbarui.');
     }
+
+    // Kalkulasi Skor Akhir & Penentuan Rekomendasi Tertinggi
+    $highestDetailScore = -1;
+    $recommendedJurusanId = null;
+
+    foreach ($scoresPerCriteria as $id => $data) {
+        $totalSkorJurusan = $studentScoresRaw[$data['kode_jurusan']] ?? 0;
+        $scoresPerCriteria[$id]['total_skor'] = $totalSkorJurusan;
+
+        if ($totalSkorJurusan > $highestDetailScore) {
+            $highestDetailScore = $totalSkorJurusan;
+            $recommendedJurusanId = $id; 
+        }
+    }
+
+    // Jalankan K-Means Clustering dengan data skor yang sudah terdistribusi merata
+    $recommendedCluster = $this->calculateKMeans($studentScoresRaw);
+
+    // Simpan ke database
+    AssessmentScore::updateOrCreate(
+        ['user_id' => auth()->id()],
+        array_merge(
+            $studentScoresRaw, 
+            [
+                'criteria_id'         => $recommendedJurusanId, 
+                'score'               => $highestDetailScore,
+                'details'             => json_encode($scoresPerCriteria), 
+                'recommended_cluster' => $recommendedCluster 
+            ]
+        )
+    );
+
+    $userId = auth()->id() ?? session()->getId();
+    Session::forget('paket_soal_cbt_' . $userId);
+
+    return redirect()->route('assessment.index')->with('success', 'Analisis Penjurusan berhasil! Rekomendasi jurusan Anda telah diperbarui.');
+}
 
     private function calculateKMeans($studentScores)
     {
@@ -138,51 +176,66 @@ class AssessmentController extends Controller
     }
 
     /**
-     * Menampilkan halaman lembar soal asesmen (Fase 1 & Fase 2)
-    
-    
-    */
+     * Menampilkan halaman lembar soal asesmen (Fase 1 & Fase 2 terpisah namun tetap acak)
+     */
     public function create()
     {
         $userId = auth()->id() ?? session()->getId();
         $sessionKey = 'paket_soal_cbt_' . $userId;
 
-        // Jika siswa belum punya paket soal aktif, buatkan paket baru secara acak per kriteria
-        if (!\Illuminate\Support\Facades\Session::has($sessionKey)) {
-            $kriteriaList = \App\Models\Criteria::all();
+        // Jika siswa belum punya paket soal aktif, buatkan paket baru secara acak per kriteria dan simpan di session
+        if (!Session::has($sessionKey)) {
+            $kriteriaList = Criteria::all();
             $pertanyaanTerpilih = collect();
 
             foreach ($kriteriaList as $kriteria) {
-                // Tarik 3 soal Fase 1 (Minat) per Kriteria
-                $fase1 = \App\Models\Question::where('criteria_id', $kriteria->id)
-                                 ->where('fase', 1)
-                                 ->inRandomOrder()->limit(3)->pluck('id');
-                                 
-                // Tarik 2 soal Fase 2 (Bakat) per Kriteria
-                $fase2 = \App\Models\Question::where('criteria_id', $kriteria->id)
-                                 ->where('fase', 2)
-                                 ->inRandomOrder()->limit(2)->pluck('id');
-                                 
+                // Tarik 3 soal Fase 1 (Minat) per Kriteria secara acak
+                $fase1 = Question::where('criteria_id', $kriteria->id)
+                               ->where('fase', 1)
+                               ->inRandomOrder()->limit(4)->pluck('id');
+                               
+                // Tarik 2 soal Fase 2 (Bakat) per Kriteria secara acak
+                $fase2 = Question::where('criteria_id', $kriteria->id)
+                               ->where('fase', 2)
+                               ->inRandomOrder()->limit(4)->pluck('id');
+                               
                 $pertanyaanTerpilih = $pertanyaanTerpilih->merge($fase1)->merge($fase2);
             }
             
-            \Illuminate\Support\Facades\Session::put($sessionKey, $pertanyaanTerpilih->toArray());
+            Session::put($sessionKey, $pertanyaanTerpilih->toArray());
         }
 
-        // Ambil ID dari session, lalu panggil datanya dan acak urutan tampilannya
-        $soalIds = \Illuminate\Support\Facades\Session::get($sessionKey);
-        $questions = \App\Models\Question::whereIn('id', $soalIds)->inRandomOrder()->get();
+        // Ambil ID dari session
+        $soalIds = Session::get($sessionKey);
 
-        return view('assessment.assessment', compact('questions'));
+        $fase1Questions = Question::whereIn('id', $soalIds)
+                            ->where('fase', 1)
+                            ->inRandomOrder()
+                            ->get();
+
+        $fase2Questions = Question::whereIn('id', $soalIds)
+                            ->where('fase', 2)
+                            ->inRandomOrder()
+                            ->get();
+
+        return view('assessment.assessment', compact('fase1Questions', 'fase2Questions'));
     }
 
-
-   public function dashboard()
+    public function dashboard()
     {
         // Ambil data hasil tes/skor terakhir milik siswa yang sedang login
         $latestScore = AssessmentScore::where('user_id', auth()->id())->latest()->first();
+        
+        $details = [];
+        if ($latestScore && $latestScore->details) {
+            $details = json_decode($latestScore->details, true);
+            // Urutkan detail dari skor tertinggi ke terendah
+            usort($details, function($a, $b) {
+                return $b['total_skor'] <=> $a['total_skor'];
+            });
+        }
 
         // Kirim data ke view dashboard.blade.php
-        return view('dashboard', compact('latestScore'));
+        return view('dashboard', compact('latestScore', 'details'));
     }
 }

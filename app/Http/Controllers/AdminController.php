@@ -34,26 +34,39 @@ class AdminController extends Controller
     }
 
     public function storeQuestion(Request $request)
-    {
-        $request->validate([
-            'teks_pertanyaan' => 'required|string',
-            'criteria_id'     => 'required|exists:criteria,id', // Pastikan nama tabelnya 'criteria'
-            'fase'            => 'required|in:1,2',
-        ]);
+{
+    $request->validate([
+        'teks_pertanyaan' => 'required|string',
+        'criteria_id'     => 'required|exists:criteria,id',
+        'fase'            => 'required|in:1,2',
+        'kode_indikator'  => 'nullable|string|max:10',
+        'kunci_jawaban'   => 'nullable|string|max:10',
+        'gambar'          => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048', // Validasi gambar max 2MB
+    ]);
 
-        Question::create([
-            'criteria_id'     => $request->criteria_id,
-            'teks_pertanyaan' => $request->teks_pertanyaan,
-            'fase'            => $request->fase,
-            'tipe_opsi'       => 'text',
-            // Default opsi untuk Fase 1 (Angket). Jika Fase 2, admin bisa edit nanti.
-            'opsi_jawaban'    => $request->fase == 1 ? null : [
-                1 => 'Sangat Kurang', 2 => 'Kurang', 3 => 'Cukup', 4 => 'Baik', 5 => 'Sangat Baik'
-            ]
-        ]);
-
-        return redirect()->back()->with('success', 'Pertanyaan manual berhasil ditambahkan!');
+    // Handle Upload Gambar
+    $gambarPath = null;
+    if ($request->hasFile('gambar')) {
+        // Simpan gambar ke folder 'storage/app/public/soal_gambar'
+        $gambarPath = $request->file('gambar')->store('soal_gambar', 'public');
     }
+
+    // Logika setup $opsi_jawaban seperti sebelumnya...
+    $opsi_jawaban = ($request->fase == 1) ? null : [1 => 'Opsi A', 2 => 'Opsi B', 3 => 'Opsi C', 4 => 'Opsi D'];
+
+    Question::create([
+        'criteria_id'     => $request->criteria_id,
+        'teks_pertanyaan' => $request->teks_pertanyaan,
+        'gambar'          => $gambarPath, // Simpan path gambar ke DB
+        'fase'            => $request->fase,
+        'tipe_opsi'       => 'text',
+        'opsi_jawaban'    => $opsi_jawaban,
+        'kode_indikator'  => $request->kode_indikator,
+        'kunci_jawaban'   => $request->kunci_jawaban,
+    ]);
+
+    return redirect()->back()->with('success', 'Soal berhasil ditambahkan!');
+}
 
     public function generateQuestions(Request $request)
     {
@@ -158,7 +171,9 @@ class AdminController extends Controller
             'teks_pertanyaan' => 'required|string',
             'criteria_id'     => 'required|exists:criteria,id',
             'fase'            => 'required|in:1,2',
-            'opsi_jawaban'    => 'nullable|array', // Validasi baru untuk input array opsi
+            'opsi_jawaban'    => 'nullable|array', 
+            // Pastikan menggunakan 'nullable' untuk membuat upload gambar menjadi opsional
+            'gambar'          => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', 
         ]);
 
         $question = Question::findOrFail($id);
@@ -171,12 +186,28 @@ class AdminController extends Controller
             });
         }
 
+        // ==========================================
+        // Logika Penanganan Gambar
+        // ==========================================
+        $gambarPath = $question->gambar; // Default: pertahankan gambar lama
+
+        if ($request->hasFile('gambar')) {
+            // 1. Hapus gambar lama dari storage fisik (jika ada dan file-nya eksis)
+            if ($question->gambar && \Illuminate\Support\Facades\Storage::disk('public')->exists($question->gambar)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($question->gambar);
+            }
+            
+            // 2. Simpan gambar baru ke folder 'soal_gambar'
+            $gambarPath = $request->file('gambar')->store('soal_gambar', 'public');
+        }
+
         $question->update([
             'criteria_id'     => $request->criteria_id,
             'teks_pertanyaan' => $request->teks_pertanyaan,
             'fase'            => $request->fase,
             // Jika tidak ada opsi yang dikirim, biarkan null. Jika ada, simpan array-nya.
             'opsi_jawaban'    => empty($opsiJawaban) ? null : $opsiJawaban, 
+            'gambar'          => $gambarPath, // Simpan path gambar ke DB
         ]);
 
         return redirect()->route('admin.pertanyaan')->with('success', 'Pertanyaan beserta opsi jawaban berhasil diperbarui!');

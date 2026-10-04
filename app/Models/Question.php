@@ -10,10 +10,13 @@ class Question extends Model
     protected $fillable = [
         'criteria_id',
         'teks_pertanyaan',
-        'fase',
         'tipe_opsi',
+        'gambar',
+        'fase',
         'opsi_jawaban',
         'bobot',
+        'kode_indikator', // BARU
+        'kunci_jawaban'
     ];
 
     // Otomatis convert JSON dari DB menjadi Array PHP

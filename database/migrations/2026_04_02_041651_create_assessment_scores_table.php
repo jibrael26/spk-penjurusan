@@ -13,11 +13,11 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             
             // Kolom skor untuk 5 Jurusan SMK (K01 - K05)
-            $table->integer('k01')->default(0); // ATPH
-            $table->integer('k02')->default(0); // APHP
-            $table->integer('k03')->default(0); // AKL
-            $table->integer('k04')->default(0); // TKRO
-            $table->integer('k05')->default(0); // TKJ
+            $table->integer('k01')->default(1); // ATPH
+            $table->integer('k02')->default(2); // APHP
+            $table->integer('k03')->default(3); // AKL
+            $table->integer('k04')->default(4); // TKRO
+            $table->integer('k05')->default(5); // TKJ
             
             // Hasil K-Means
             $table->string('recommended_cluster')->nullable();

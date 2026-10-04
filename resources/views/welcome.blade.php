@@ -25,7 +25,6 @@
 
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="#fitur" class="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">Fitur Sistem</a>
-                    <a href="#cara-kerja" class="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">Cara Kerja</a>
                     
                     <div class="w-px h-6 bg-slate-200"></div>
 
@@ -85,8 +84,8 @@
                     <a href="{{ route('register') }}" class="w-full sm:w-auto px-8 py-4 text-base font-bold text-white bg-indigo-600 rounded-full hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-200 hover:-translate-y-1 transition-all">
                         Mulai Tes Gratis
                     </a>
-                    <a href="#cara-kerja" class="w-full sm:w-auto px-8 py-4 text-base font-bold text-slate-700 bg-white border border-slate-200 rounded-full hover:bg-slate-50 hover:shadow-md transition-all">
-                        Pelajari Cara Kerja
+                    <a href="{{ route('login') }}" class="w-full sm:w-auto px-8 py-4 text-base font-bold text-slate-700 bg-white border border-slate-200 rounded-full hover:bg-slate-50 hover:shadow-md transition-all">
+                        Masuk
                     </a>
                 @endauth
             </div>

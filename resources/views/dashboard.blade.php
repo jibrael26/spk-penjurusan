@@ -54,30 +54,34 @@
 
                 <!-- Grafik Radar (Lebar 2 Kolom) -->
                 <div class="bg-white rounded-[2rem] p-6 sm:p-8 shadow-sm border border-gray-100 lg:col-span-2 flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-4 border-b pb-4">
-                            <div>
-                                <h4 class="text-xl font-bold text-gray-900">Grafik Peta Potensi & Bakat</h4>
-                                <p class="text-gray-400 text-xs mt-0.5">Visualisasi skor per kriteria (K01 - K05)</p>
-                            </div>
-                            <span class="{{ isset($latestScore) && $latestScore ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600' }} px-3 py-1 rounded-full text-xs font-bold">
-                                {{ isset($latestScore) && $latestScore ? 'Aktif' : 'Kosong' }}
-                            </span>
-                        </div>
+    <div>
+        <div class="flex items-center justify-between mb-4 border-b pb-4">
+            <div>
+                <h4 class="text-xl font-bold text-gray-900">Grafik Peta Potensi & Bakat</h4>
+                <p class="text-gray-400 text-xs mt-0.5">Visualisasi skor per kriteria (K01 - K05)</p>
+            </div>
+            <span class="{{ isset($latestScore) && $latestScore ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600' }} px-3 py-1 rounded-full text-xs font-bold">
+                {{ isset($latestScore) && $latestScore ? 'Aktif' : 'Kosong' }}
+            </span>
+        </div>
 
-                        @if(isset($latestScore) && $latestScore)
-                            <!-- Container Grafik ApexCharts -->
-                            <div id="radarChart" class="w-full flex justify-center py-2"></div>
-                        @else
-                            <!-- Empty State Grafik -->
-                            <div class="py-16 text-center">
-                                <svg class="w-16 h-16 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
-                                <h5 class="text-base font-semibold text-gray-700">Grafik Belum Tersedia</h5>
-                                <p class="text-sm text-gray-400 mt-1">Selesaikan tes asesmen terlebih dahulu untuk merender grafik potensi dirimu.</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
+        @if(isset($latestScore) && $latestScore)
+            <!-- Container Grafik ApexCharts yang Lebih Interaktif -->
+            <div id="radarChart" class="w-full flex justify-center py-2"></div>
+
+            <!-- CDN ApexCharts (Pastikan sudah dimuat di layout utama atau dipasang di sini) -->
+            <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+            
+        @else
+            <!-- Empty State Grafik -->
+            <div class="py-16 text-center">
+                <svg class="w-16 h-16 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+                <h5 class="text-base font-semibold text-gray-700">Grafik Belum Tersedia</h5>
+                <p class="text-sm text-gray-400 mt-1">Selesaikan tes asesmen terlebih dahulu untuk merender grafik potensi dirimu.</p>
+            </div>
+        @endif
+    </div>
+</div>
 
                 <!-- Kartu Samping: Status, Progres, & Tombol Riwayat Asesmen -->
                 <div class="space-y-6 flex flex-col justify-between">
@@ -125,54 +129,77 @@
     <!-- Script Inisialisasi Grafik (Hanya dirender jika data ada) -->
     @if(isset($latestScore) && $latestScore)
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var options = {
-                series: [{
-                    name: 'Skor Kriteria Siswa',
-                    data: [
-                        {{ $latestScore->k01 ?? 0 }}, 
-                        {{ $latestScore->k02 ?? 0 }}, 
-                        {{ $latestScore->k03 ?? 0 }}, 
-                        {{ $latestScore->k04 ?? 0 }}, 
-                        {{ $latestScore->k05 ?? 0 }}
-                    ],
-                }],
-                chart: {
-                    height: 320,
-                    type: 'radar',
-                    toolbar: { show: false }
-                },
-                labels: [
-                    'K01 (ATPH)', 
-                    'K02 (APHP)', 
-                    'K03 (AKL)', 
-                    'K04 (TKRO)', 
-                    'K05 (TKJ)'
-                ],
-                stroke: {
-                    width: 2,
-                    colors: ['#6366f1']
-                },
-                fill: {
-                    opacity: 0.3,
-                    colors: ['#6366f1']
-                },
-                markers: {
-                    size: 5,
-                    colors: ['#fff'],
-                    strokeColors: '#6366f1',
-                    strokeWidth: 2,
-                },
-                yaxis: {
-                    show: false,
-                    min: 0,
-                    max: 60 
-                }
-            };
+                document.addEventListener("DOMContentLoaded", function() {
+                    var options = {
+                        series: [{
+                            name: 'Skor Potensi',
+                            data: [
+                                {{ $latestScore->k01 ?? 0 }}, 
+                                {{ $latestScore->k02 ?? 0 }}, 
+                                {{ $latestScore->k03 ?? 0 }}, 
+                                {{ $latestScore->k04 ?? 0 }}, 
+                                {{ $latestScore->k05 ?? 0 }}
+                            ],
+                        }],
+                        chart: {
+                            height: 350,
+                            type: 'radar',
+                            toolbar: { show: false },
+                            animations: {
+                                enabled: true,
+                                easing: 'easeinout',
+                                speed: 800
+                            }
+                        },
+                        colors: ['#3b82f6'],
+                        markers: {
+                            size: 5,
+                            colors: ['#ffffff'],
+                            strokeColors: '#3b82f6',
+                            strokeWidth: 3,
+                            hover: { size: 7 }
+                        },
+                        xaxis: {
+                            categories: [
+                                'K01 (ATPH)', 
+                                'K02 (APHP)', 
+                                'K03 (AKL)', 
+                                'K04 (TKRO)', 
+                                'K05 (TKJ)'
+                            ],
+                            labels: {
+                                style: {
+                                    colors: ['#374151', '#374151', '#374151', '#374151', '#374151'],
+                                    fontSize: '12px',
+                                    fontWeight: 600
+                                }
+                            }
+                        },
+                        yaxis: {
+                            show: false // Sembunyikan angka koordinat sumbu agar lebih bersih
+                        },
+                        fill: {
+                            opacity: 0.4,
+                            colors: ['#3b82f6']
+                        },
+                        stroke: {
+                            show: true,
+                            width: 3,
+                            colors: ['#2563eb'],
+                            dashArray: 0
+                        },
+                        tooltip: {
+                            y: {
+                                formatter: function(val) {
+                                    return val + " Poin";
+                                }
+                            }
+                        }
+                    };
 
-            var chart = new ApexCharts(document.querySelector("#radarChart"), options);
-            chart.render();
-        });
-    </script>
+                    var chart = new ApexCharts(document.querySelector("#radarChart"), options);
+                    chart.render();
+                });
+            </script>
     @endif
 </x-app-layout>

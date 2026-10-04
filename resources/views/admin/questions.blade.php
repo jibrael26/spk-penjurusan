@@ -31,11 +31,36 @@
 
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Fase Tes</label>
-                        <select name="fase" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" required>
-                            <option value="1">Fase 1 (Angket Likert)</option>
-                            <option value="2">Fase 2 (Pilihan Ganda A-E)</option>
+                        <select name="fase" id="fase_selector" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" required>
+                            <option value="1">Fase 1 (Angket Likert - Minat)</option>
+                            <option value="2">Fase 2 (Pilihan Ganda A-D - Bakat)</option>
                         </select>
                     </div>
+
+                    <!-- BARU: Input Kode Indikator -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kode Indikator</label>
+                        <input type="text" name="kode_indikator" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Contoh: R1, Gf1 (Boleh dikosongkan)">
+                    </div>
+
+                    <!-- BARU: Input Kunci Jawaban -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kunci Jawaban</label>
+                        <select name="kunci_jawaban" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                            <option value="">-- Tidak Ada Kunci (Untuk Fase 1) --</option>
+                            <option value="1">A</option>
+                            <option value="2">B</option>
+                            <option value="3">C</option>
+                            <option value="4">D</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">*Pilih kunci jawaban khusus untuk soal Fase 2.</p>
+                    </div>
+
+                    <div class="mb-4 p-4 border border-dashed border-gray-300 rounded-lg bg-gray-50">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Upload Gambar Pendukung (Opsional)</label>
+        <input type="file" name="gambar" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+        <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG, GIF. Maksimal ukuran 2MB.</p>
+    </div>
 
                     <button type="submit" class="w-full py-2.5 px-4 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-medium text-sm">
                         Simpan Pertanyaan
@@ -44,35 +69,7 @@
             </div>
 
             <!-- Panel Generate AI -->
-            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-2xl shadow-md text-white">
-                <h3 class="text-lg font-bold mb-2 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    Asisten AI (Gemini)
-                </h3>
-                <p class="text-indigo-100 text-sm mb-4 leading-relaxed">Generate soal otomatis berdasarkan referensi teks materi kompetensi.</p>
-                
-                <form action="{{ route('admin.questions.generate') }}" method="POST">
-                    @csrf
-                    <div class="mb-3">
-                        <label class="block text-xs font-semibold text-indigo-100 mb-1 uppercase tracking-wider">Target Jurusan</label>
-                        <select name="criteria_id" class="w-full border-transparent bg-white/20 text-white rounded-lg focus:ring-2 focus:ring-white focus:border-transparent text-sm placeholder-indigo-200" required>
-                            <option value="" class="text-gray-800">Pilih Jurusan Target AI</option>
-                            @isset($criteria)
-                                @foreach($criteria as $crit)
-                                    <option value="{{ $crit->id }}" class="text-gray-800">{{ $crit->kode_kriteria }} - {{ $crit->nama_kriteria }}</option>
-                                @endforeach
-                            @endisset
-                        </select>
-                    </div>
-
-                    <div class="mb-4">
-                        <textarea name="teks_mentah" rows="3" class="w-full border-transparent bg-white/10 text-white placeholder-indigo-200 rounded-lg focus:ring-2 focus:ring-white focus:border-transparent text-sm" required placeholder="Paste teks materi atau ringkasan kompetensi di sini..."></textarea>
-                    </div>
-                    <button type="submit" class="w-full py-2.5 px-4 bg-white text-indigo-600 rounded-lg hover:bg-gray-50 transition font-bold text-sm shadow">
-                        Generate Soal Otomatis
-                    </button>
-                </form>
-            </div>
+           
         </div>
 
         <!-- Kolom Kanan: Tabel Daftar Soal -->
@@ -100,6 +97,9 @@
                                 @forelse ($questions as $q)
                                     <tr class="hover:bg-gray-50 transition-colors">
                                         <td class="px-6 py-4 text-gray-900">
+                                            <div class="font-medium text-blue-600 text-xs mb-1">
+                                                @if($q->kode_indikator) [{{ $q->kode_indikator }}] @endif
+                                            </div>
                                             <div class="line-clamp-2" title="{{ $q->teks_pertanyaan }}">
                                                 {{ $q->teks_pertanyaan }}
                                             </div>

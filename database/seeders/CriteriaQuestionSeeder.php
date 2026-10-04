@@ -14,11 +14,11 @@ class CriteriaQuestionSeeder extends Seeder
         // 1. DATA KRITERIA (JURUSAN)
         // ==========================================
         $kriteria = [
-            'ATPH' => Criteria::create(['kode_kriteria' => 'K01', 'nama_kriteria' => 'Agribisnis Tanaman Pangan dan Hortikultura (ATPH)']),
-            'APHP' => Criteria::create(['kode_kriteria' => 'K02', 'nama_kriteria' => 'Agribisnis Pengolahan Hasil Pertanian (APHP)']),
-            'AKL'  => Criteria::create(['kode_kriteria' => 'K03', 'nama_kriteria' => 'Akuntansi dan Keuangan Lembaga (AKL)']),
-            'TKRO' => Criteria::create(['kode_kriteria' => 'K04', 'nama_kriteria' => 'Teknik Kendaraan Ringan Otomotif (TKRO)']),
-            'TKJ'  => Criteria::create(['kode_kriteria' => 'K05', 'nama_kriteria' => 'Teknik Komputer dan Jaringan (TKJ)']),
+            'ATPH' => Criteria::create(['kode_kriteria' => 'K01', 'nama_kriteria' => 'Agribisnis Tanaman Pangan dan Hortikultura ']),
+            'APHP' => Criteria::create(['kode_kriteria' => 'K02', 'nama_kriteria' => 'Agribisnis Pengolahan Hasil Pertanian ']),
+            'AKL'  => Criteria::create(['kode_kriteria' => 'K03', 'nama_kriteria' => 'Akuntansi dan Keuangan Lembaga ']),
+            'TKRO' => Criteria::create(['kode_kriteria' => 'K04', 'nama_kriteria' => 'Teknik Kendaraan Ringan Otomotif ']),
+            'TKJ'  => Criteria::create(['kode_kriteria' => 'K05', 'nama_kriteria' => 'Teknik Komputer dan Jaringan ']),
         ];
 
         // ==========================================
