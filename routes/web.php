@@ -19,28 +19,28 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     
     // Dashboard User
-    Route::get('/dashboard', [AssessmentController::class, 'dashboard'])
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+    Route::get('/dashboard', [AssessmentController::class, 'dashboard'])->name('dashboard');
 
     // Manajemen Profil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Fitur Tes Penjurusan (Assessment)
+    // ==========================================
+    // Fitur Tes Penjurusan (Assessment) - Multi-Step
+    // ==========================================
+    
+    // Halaman utama asesmen / dashboard pengantar
     Route::get('/tes-penjurusan', [AssessmentController::class, 'index'])->name('assessment.index');
-    Route::post('/tes-penjurusan/simpan', [AssessmentController::class, 'store'])->name('assessment.store');
     Route::get('/tes-penjurusan/hasil/{id}', [AssessmentController::class, 'showResult'])->name('assessment.result');
+    
+    // Tahap 1: Tes Minat (Teori RIASEC)
+    Route::get('/tes-penjurusan/fase-1', [AssessmentController::class, 'createFase1'])->name('assessment.fase1');
+    Route::post('/tes-penjurusan/fase-1', [AssessmentController::class, 'storeFase1'])->name('assessment.storeFase1');
 
-    // Halaman utama asesmen / dashboard hasil user
-    Route::get('/tes-penjurusan', [AssessmentController::class, 'index'])->name('assessment.index');
-    
-    // Halaman untuk menampilkan soal tes (Pastikan penamaan .name('assessment.create') ada di sini!)
-    Route::get('/tes-penjurusan/mulai', [AssessmentController::class, 'create'])->name('assessment.create');
-    
-    // Proses penyimpanan jawaban
-    Route::post('/tes-penjurusan/simpan', [AssessmentController::class, 'store'])->name('assessment.store');
+    // Tahap 2: Tes Bakat (Teori CHC) & Proses Kalkulasi Akhir
+    Route::get('/tes-penjurusan/fase-2', [AssessmentController::class, 'createFase2'])->name('assessment.fase2');
+    Route::post('/tes-penjurusan/fase-2', [AssessmentController::class, 'storeFase2'])->name('assessment.storeFase2');
 
 });
 
@@ -63,7 +63,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Fitur Aksi Tambahan: Edit & Hapus Pertanyaan
     Route::get('/questions/{id}/edit', [AdminController::class, 'editQuestion'])->name('questions.edit');
-    // Tambahan Route PUT untuk memproses update data dari form edit
     Route::put('/questions/{id}', [AdminController::class, 'updateQuestion'])->name('questions.update');
     Route::delete('/questions/{id}', [AdminController::class, 'destroyQuestion'])->name('questions.destroy');
 

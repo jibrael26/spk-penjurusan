@@ -37,7 +37,7 @@
                     </div>
                     
                     <div class="shrink-0 z-10 flex flex-col sm:flex-row gap-3">
-                         <a href="{{ route('assessment.create') }}" class="inline-flex items-center justify-center px-6 py-3.5 bg-white text-indigo-600 rounded-full font-extrabold text-base hover:bg-gray-50 hover:scale-105 transition-all duration-300 shadow-lg">
+                         <a href="{{ route('assessment.fase1') }}" class="inline-flex items-center justify-center px-6 py-3.5 bg-white text-indigo-600 rounded-full font-extrabold text-base hover:bg-gray-50 hover:scale-105 transition-all duration-300 shadow-lg">
                             @if(isset($latestScore) && $latestScore)
                                 Ulangi Tes Asesmen
                             @else

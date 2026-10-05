@@ -53,7 +53,7 @@
 
                         <!-- Tombol Aksi Navigasi (Ulangi Tes & Kembali ke Beranda) -->
                         <div class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
-                            <a href="{{ route('assessment.create') }}" class="text-sm text-blue-600 hover:underline font-semibold">
+                            <a href="{{ route('assessment.fase1') }}" class="text-sm text-blue-600 hover:underline font-semibold">
                                 &larr; Ulangi Tes Penjurusan
                             </a>
                             <span class="hidden sm:inline text-gray-300">|</span>
