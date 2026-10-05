@@ -63,6 +63,11 @@
                                 </ul>
                             </div>
                         @endforeach
+                    @else
+                        <div class="md:col-span-3 rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-8 text-center">
+                            <p class="font-medium text-gray-600">Belum ada data assessment untuk dikelompokkan.</p>
+                            <p class="mt-1 text-sm text-gray-400">Hasil K-Means akan tampil setelah siswa menyelesaikan tes.</p>
+                        </div>
                     @endif
                 </div>
             </div>

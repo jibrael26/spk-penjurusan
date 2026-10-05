@@ -128,9 +128,11 @@ public function dashboard()
         
         $datasetKMeans = [];
         foreach ($siswaScores as $s) {$features = [
-                (float) ($s->assessmentScore->score_c1 ?? 0),
-                (float) ($s->assessmentScore->score_c2 ?? 0),
-                (float) ($s->assessmentScore->score_c3 ?? 0),
+                (float) ($s->assessmentScore->k01 ?? 0),
+                (float) ($s->assessmentScore->k02 ?? 0),
+                (float) ($s->assessmentScore->k03 ?? 0),
+                (float) ($s->assessmentScore->k04 ?? 0),
+                (float) ($s->assessmentScore->k05 ?? 0),
             ];
 
             $datasetKMeans[] = [
@@ -139,8 +141,8 @@ public function dashboard()
             ];
         }
 
-        $k = 3; 
-        $hasilCluster =$this->kMeansClustering($datasetKMeans,$k);
+        $k = min(3, count($datasetKMeans));
+        $hasilCluster = $this->kMeansClustering($datasetKMeans, $k);
 
         return view('admin.users.index', compact(
             'siswa', 
@@ -207,7 +209,7 @@ public function dashboard()
     // ==========================================
     private function kMeansClustering($data,$k)
     {
-        if (empty($data) || count($data) <$k) return [];
+        if (empty($data) || $k < 1) return [];
 
         $centroids = [];$randomKeys = array_rand($data,$k);
         if (!is_array($randomKeys)) $randomKeys = [$randomKeys];
