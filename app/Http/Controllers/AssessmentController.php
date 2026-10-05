@@ -57,7 +57,7 @@ class AssessmentController extends Controller
         return view('assessment.fase2', compact('questions'));
     }
 
-    public function storeFase2(Request $request)
+   public function storeFase2(Request $request)
     {
         $request->validate([
             'answers' => 'required|array',
@@ -65,19 +65,25 @@ class AssessmentController extends Controller
             'answers.required' => 'Silakan jawab seluruh pertanyaan bakat terlebih dahulu.',
         ]);
 
-        // Gabungkan jawaban Fase 1 dari session dan Fase 2 dari request saat ini
         $fase1Answers = session('fase1_answers', []);
         $fase2Answers = $request->input('answers');
-        $answers = $fase1Answers + $fase2Answers; // Merge array jawaban
+        $answers = $fase1Answers + $fase2Answers;
 
         $allCriteria = Criteria::all();
         $studentScoresRaw = [];
+        $maxPossibleScores = []; // Tambahan: Menyimpan potensi skor maksimal
         $scoresPerCriteria = [];
+        
+        // Optimasi: Jadikan dictionary/hash map agar tidak perlu loop berkali-kali nanti
+        $criteriaMap = []; 
 
         foreach ($allCriteria as $criteria) {
             $kode = strtolower($criteria->kode_kriteria);
-            $studentScoresRaw[$kode] = 0; 
-
+            $studentScoresRaw[$kode] = 0;
+            $maxPossibleScores[$kode] = 0; 
+            
+            $criteriaMap[$kode] = $criteria->id; // Mapping ID
+            
             $scoresPerCriteria[$criteria->id] = [
                 'nama_jurusan' => $criteria->nama_kriteria,
                 'kode_jurusan' => $kode,
@@ -109,6 +115,8 @@ class AssessmentController extends Controller
             $rawIndikator = strtolower(preg_replace('/[0-9]+/', '', $question->kode_indikator ?? ''));
             
             $poinDasar = 0;
+            $maxPoinSoal = 5; // Asumsi skala likert max 5, dan benar max 5
+
             if ($question->fase == 1) {
                 $poinDasar = $jawabanSiswa;
             } elseif ($question->fase == 2) {
@@ -120,41 +128,58 @@ class AssessmentController extends Controller
 
             if (isset($matrixKorelasi[$rawIndikator])) {
                 foreach ($matrixKorelasi[$rawIndikator] as $kodeJurusan => $bobotPengali) {
+                    // Skor aktual siswa
                     $tambahSkor = $poinDasar * $bobotPengali;
                     $studentScoresRaw[$kodeJurusan] += $tambahSkor;
 
-                    foreach ($allCriteria as $crit) {
-                        if (strtolower($crit->kode_kriteria) === $kodeJurusan) {
-                            if ($question->fase == 1) {
-                                $scoresPerCriteria[$crit->id]['skor_minat'] += $tambahSkor;
-                            } else {
-                                $scoresPerCriteria[$crit->id]['skor_bakat'] += $tambahSkor;
-                            }
+                    // Skor maksimal jika siswa menjawab sempurna (untuk normalisasi)
+                    $maxPossibleScores[$kodeJurusan] += ($maxPoinSoal * $bobotPengali);
+
+                    // Map ke kriteria tanpa nested loop (Lebih efisien)
+                    if (isset($criteriaMap[$kodeJurusan])) {
+                        $critId = $criteriaMap[$kodeJurusan];
+                        if ($question->fase == 1) {
+                            $scoresPerCriteria[$critId]['skor_minat'] += $tambahSkor;
+                        } else {
+                            $scoresPerCriteria[$critId]['skor_bakat'] += $tambahSkor;
                         }
                     }
                 }
             }
         }
 
+        // ==========================================
+        // PROSES NORMALISASI SKOR KE SKALA 0-100
+        // ==========================================
+        $normalizedScores = [];
         $highestDetailScore = -1;
         $recommendedJurusanId = null;
 
         foreach ($scoresPerCriteria as $id => $data) {
-            $totalSkorJurusan = $studentScoresRaw[$data['kode_jurusan']] ?? 0;
-            $scoresPerCriteria[$id]['total_skor'] = $totalSkorJurusan;
+            $kode = $data['kode_jurusan'];
+            $rawScore = $studentScoresRaw[$kode] ?? 0;
+            $maxScore = $maxPossibleScores[$kode] > 0 ? $maxPossibleScores[$kode] : 1; // Cegah division by zero
+            
+            // Hitung persentase kecocokan (Skala 100)
+            $persentase = round(($rawScore / $maxScore) * 100, 2);
+            $normalizedScores[$kode] = $persentase;
 
-            if ($totalSkorJurusan > $highestDetailScore) {
-                $highestDetailScore = $totalSkorJurusan;
+            // Update skor di details dengan persentase (bukan raw score yang bias)
+            $scoresPerCriteria[$id]['total_skor'] = $persentase;
+
+            if ($persentase > $highestDetailScore) {
+                $highestDetailScore = $persentase;
                 $recommendedJurusanId = $id; 
             }
         }
 
-        $recommendedCluster = $this->calculateKMeans($studentScoresRaw);
+        // Hitung K-Means menggunakan data NORMALISASI, bukan raw score!
+        $recommendedCluster = $this->calculateKMeans($normalizedScores);
 
         AssessmentScore::updateOrCreate(
             ['user_id' => auth()->id()],
             array_merge(
-                $studentScoresRaw, 
+                $normalizedScores, // Simpan persentase ke database, bukan raw bias
                 [
                     'criteria_id'         => $recommendedJurusanId, 
                     'score'               => $highestDetailScore,
@@ -164,7 +189,6 @@ class AssessmentController extends Controller
             )
         );
 
-        // Hapus session sementara Fase 1
         Session::forget('fase1_answers');
 
         return redirect()->route('dashboard')->with('success', 'Analisis Penjurusan berhasil! Rekomendasi jurusan Anda telah diperbarui.');

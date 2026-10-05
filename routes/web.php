@@ -52,9 +52,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // awalan "admin/" pada URL dan "admin." pada nama rute di dalamnya.
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     
-    // Dashboard & Data Master
+    // Dashboard & Data Master Siswa
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::get('/data-siswa', [AdminController::class, 'dataSiswa'])->name('siswa');
+
+    // Fitur Aksi Siswa: Update & Hapus Data Siswa
+    Route::put('/users/{id}', [AdminController::class, 'updateUser'])->name('users.update');
+    Route::delete('/users/{id}', [AdminController::class, 'destroyUser'])->name('users.destroy');
     
     // Fitur Manajemen Pertanyaan (Manual & AI)
     Route::get('/questions', [AdminController::class, 'questions'])->name('pertanyaan');
@@ -65,6 +69,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/questions/{id}/edit', [AdminController::class, 'editQuestion'])->name('questions.edit');
     Route::put('/questions/{id}', [AdminController::class, 'updateQuestion'])->name('questions.update');
     Route::delete('/questions/{id}', [AdminController::class, 'destroyQuestion'])->name('questions.destroy');
+
+    // Fitur Export Data Penjurusan
+    Route::get('/export-assessment', [AdminController::class, 'exportAssessment'])->name('export.assessment');
 
 });
 

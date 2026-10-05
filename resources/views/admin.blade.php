@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Panel - SPK Penjurusan</title>
+    <title>Admin Panel - Rekomendasi Jurusan</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -27,8 +27,8 @@
             <!-- Logo Area -->
             <div class="flex items-center justify-center h-16 bg-slate-950 border-b border-slate-800">
                 <span class="text-xl font-bold tracking-wider flex items-center gap-2">
-                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">S</div>
-                    SPK Admin
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">R</div>
+                    Rekomendasi Jurusan
                 </span>
             </div>
 
