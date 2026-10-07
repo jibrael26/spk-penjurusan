@@ -19,7 +19,12 @@ class AssessmentScore extends Model
         'recommended_cluster', // Menyimpan hasil rekomendasi K-Means
         'criteria_id',         // Menyimpan ID Jurusan Rekomendasi (berdasarkan metode bobot)
         'score',               // Menyimpan skor total/akhir (berdasarkan metode bobot)
-        'details'              // Menyimpan riwayat rincian perhitungan minat & bakat dalam format JSON
+        'details',              // Menyimpan riwayat rincian perhitungan minat & bakat dalam format JSON
+        'riasec_scores'        // Menyimpan persentase skor enam dimensi RIASEC
+    ];
+
+    protected $casts = [
+        'riasec_scores' => 'array',
     ];
 
     public function user()

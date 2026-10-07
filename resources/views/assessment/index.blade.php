@@ -26,29 +26,30 @@
                         </div>
 
                         <div class="mt-8 text-left bg-gray-50 p-6 rounded-lg border">
-                            <h4 class="font-bold text-gray-700 mb-3">Rincian Perolehan Skor per Kriteria:</h4>
-                            <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 text-center">
-                                <div class="bg-white p-3 rounded shadow-sm border">
-                                    <span class="block text-xs text-gray-500 font-semibold">K01 (ATPH)</span>
-                                    <span class="text-xl font-bold text-blue-600">{{ $latestScore->k01 }}</span>
+                            <h4 class="font-bold text-gray-700 mb-3">Rincian Perolehan Nilai RIASEC:</h4>
+                            @if($latestScore->riasec_scores)
+                                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 text-center">
+                                    @foreach([
+                                        'r' => 'Realistic (R)',
+                                        'i' => 'Investigative (I)',
+                                        'a' => 'Artistic (A)',
+                                        's' => 'Social (S)',
+                                        'e' => 'Enterprising (E)',
+                                        'c' => 'Conventional (C)',
+                                    ] as $dimensi => $label)
+                                        <div class="bg-white p-3 rounded shadow-sm border">
+                                            <span class="block text-xs text-gray-500 font-semibold">{{ $label }}</span>
+                                            <span class="text-xl font-bold text-blue-600">
+                                                {{ $latestScore->riasec_scores[$dimensi] ?? 0 }}%
+                                            </span>
+                                        </div>
+                                    @endforeach
                                 </div>
-                                <div class="bg-white p-3 rounded shadow-sm border">
-                                    <span class="block text-xs text-gray-500 font-semibold">K02 (APHP)</span>
-                                    <span class="text-xl font-bold text-blue-600">{{ $latestScore->k02 }}</span>
-                                </div>
-                                <div class="bg-white p-3 rounded shadow-sm border">
-                                    <span class="block text-xs text-gray-500 font-semibold">K03 (AKL)</span>
-                                    <span class="text-xl font-bold text-blue-600">{{ $latestScore->k03 }}</span>
-                                </div>
-                                <div class="bg-white p-3 rounded shadow-sm border">
-                                    <span class="block text-xs text-gray-500 font-semibold">K04 (TKRO)</span>
-                                    <span class="text-xl font-bold text-blue-600">{{ $latestScore->k04 }}</span>
-                                </div>
-                                <div class="bg-white p-3 rounded shadow-sm border">
-                                    <span class="block text-xs text-gray-500 font-semibold">K05 (TKJ)</span>
-                                    <span class="text-xl font-bold text-blue-600">{{ $latestScore->k05 }}</span>
-                                </div>
-                            </div>
+                            @else
+                                <p class="text-sm text-gray-500">
+                                    Rincian nilai RIASEC belum tersedia. Silakan ulangi asesmen untuk memperbarui hasil.
+                                </p>
+                            @endif
                         </div>
 
                         <!-- Tombol Aksi Navigasi (Ulangi Tes & Kembali ke Beranda) -->

@@ -49,45 +49,61 @@
                 </div>
             </div>
 
-            <!-- Bagian Visualisasi Grafik & Detail Hasil -->
+            <!-- Bagian Visualisasi 2 Grafik Interaktif & Detail Hasil -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                <!-- Grafik Radar (Lebar 2 Kolom) -->
-                <div class="bg-white rounded-[2rem] p-6 sm:p-8 shadow-sm border border-gray-100 lg:col-span-2 flex flex-col justify-between">
-    <div>
-        <div class="flex items-center justify-between mb-4 border-b pb-4">
-            <div>
-                <h4 class="text-xl font-bold text-gray-900">Grafik Peta Potensi & Bakat</h4>
-                <p class="text-gray-400 text-xs mt-0.5">Visualisasi skor per kriteria (K01 - K05)</p>
-            </div>
-            <span class="{{ isset($latestScore) && $latestScore ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600' }} px-3 py-1 rounded-full text-xs font-bold">
-                {{ isset($latestScore) && $latestScore ? 'Aktif' : 'Kosong' }}
-            </span>
-        </div>
+                <!-- Kumpulan 2 Grafik (Lebar 2 Kolom) -->
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    <!-- Grafik 1: Radar Chart RIASEC -->
+                    <div class="bg-white rounded-[2rem] p-6 sm:p-8 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4 border-b pb-4">
+                            <div>
+                                <h4 class="text-xl font-bold text-gray-900">Peta Minat RIASEC</h4>
+                                <p class="text-gray-400 text-xs mt-0.5">Profil enam dimensi minat berdasarkan hasil assessment</p>
+                            </div>
+                            <span class="{{ isset($latestScore) && $latestScore ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600' }} px-3 py-1 rounded-full text-xs font-bold">
+                                {{ isset($latestScore) && $latestScore ? 'Aktif' : 'Kosong' }}
+                            </span>
+                        </div>
 
-        @if(isset($latestScore) && $latestScore)
-            <!-- Container Grafik ApexCharts yang Lebih Interaktif -->
-            <div id="radarChart" class="w-full flex justify-center py-2"></div>
+                        @if(isset($latestScore) && $latestScore && $latestScore->riasec_scores)
+                            <div id="radarChart" class="w-full flex justify-center py-2"></div>
+                        @else
+                            <div class="py-12 text-center">
+                                <svg class="w-16 h-16 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path></svg>
+                                <h5 class="text-base font-semibold text-gray-700">Grafik Belum Tersedia</h5>
+                                <p class="text-sm text-gray-400 mt-1">Selesaikan tes asesmen terlebih dahulu untuk merender grafik potensi.</p>
+                            </div>
+                        @endif
+                    </div>
 
-            <!-- CDN ApexCharts (Pastikan sudah dimuat di layout utama atau dipasang di sini) -->
-            <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-            
-        @else
-            <!-- Empty State Grafik -->
-            <div class="py-16 text-center">
-                <svg class="w-16 h-16 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
-                <h5 class="text-base font-semibold text-gray-700">Grafik Belum Tersedia</h5>
-                <p class="text-sm text-gray-400 mt-1">Selesaikan tes asesmen terlebih dahulu untuk merender grafik potensi dirimu.</p>
-            </div>
-        @endif
-    </div>
-</div>
+                    <!-- Grafik 2: Bar Chart RIASEC -->
+                    <div class="bg-white rounded-[2rem] p-6 sm:p-8 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4 border-b pb-4">
+                            <div>
+                                <h4 class="text-xl font-bold text-gray-900">Perolehan Nilai RIASEC</h4>
+                                <p class="text-gray-400 text-xs mt-0.5">Perbandingan persentase skor setiap dimensi minat</p>
+                            </div>
+                        </div>
+
+                        @if(isset($latestScore) && $latestScore && $latestScore->riasec_scores)
+                            <div id="barChart" class="w-full flex justify-center py-2"></div>
+                        @else
+                            <div class="py-12 text-center">
+                                <h5 class="text-base font-semibold text-gray-700">Grafik Batang Belum Tersedia</h5>
+                                <p class="text-sm text-gray-400 mt-1">Lakukan tes untuk melihat grafik batang perolehan nilai.</p>
+                            </div>
+                        @endif
+                    </div>
+
+                </div>
 
                 <!-- Kartu Samping: Status, Progres, & Tombol Riwayat Asesmen -->
                 <div class="space-y-6 flex flex-col justify-between">
                     <div class="bg-white rounded-[2rem] p-6 sm:p-8 shadow-sm border border-gray-100 flex flex-col justify-between flex-grow">
                         <div>
-                            <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 mb-4 font-bold">
+                            <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 mb-4 font-bold text-xl">
                                 📊
                             </div>
                             <h4 class="text-lg font-bold text-gray-900 mb-1">Status Asesmen</h4>
@@ -98,6 +114,29 @@
                                     Belum ada asesmen yang dikerjakan.
                                 @endif
                             </p>
+
+                            @if(isset($latestScore) && $latestScore)
+                                <div class="mb-5 rounded-2xl bg-indigo-50 border border-indigo-100 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-indigo-500">Rekomendasi Jurusan</p>
+                                    <p class="mt-1 text-base font-extrabold leading-snug text-indigo-900">
+                                        {{ $latestScore->recommended_cluster }}
+                                    </p>
+                                </div>
+
+                                @if($riasecInsight)
+                                    <div class="rounded-2xl bg-gray-50 border border-gray-100 p-4">
+                                        <div class="flex items-center justify-between gap-3 mb-2">
+                                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Karakteristik Utama</p>
+                                            <span class="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-indigo-600 shadow-sm">
+                                                {{ $riasecInsight['label'] }} {{ $riasecInsight['score'] }}%
+                                            </span>
+                                        </div>
+                                        <p class="text-sm leading-relaxed text-gray-600">
+                                            {{ $riasecInsight['description'] }}
+                                        </p>
+                                    </div>
+                                @endif
+                            @endif
                         </div>
 
                         <div class="space-y-4 mt-4">
@@ -126,80 +165,114 @@
         </div>
     </div>
 
-    <!-- Script Inisialisasi Grafik (Hanya dirender jika data ada) -->
-    @if(isset($latestScore) && $latestScore)
+    <!-- Script Inisialisasi 2 Grafik ApexCharts (Hanya dirender jika data ada) -->
+    @if(isset($latestScore) && $latestScore && $latestScore->riasec_scores)
     <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                    var options = {
-                        series: [{
-                            name: 'Skor Potensi',
-                            data: [
-                                {{ $latestScore->k01 ?? 0 }}, 
-                                {{ $latestScore->k02 ?? 0 }}, 
-                                {{ $latestScore->k03 ?? 0 }}, 
-                                {{ $latestScore->k04 ?? 0 }}, 
-                                {{ $latestScore->k05 ?? 0 }}
-                            ],
-                        }],
-                        chart: {
-                            height: 350,
-                            type: 'radar',
-                            toolbar: { show: false },
-                            animations: {
-                                enabled: true,
-                                easing: 'easeinout',
-                                speed: 800
-                            }
-                        },
-                        colors: ['#3b82f6'],
-                        markers: {
-                            size: 5,
-                            colors: ['#ffffff'],
-                            strokeColors: '#3b82f6',
-                            strokeWidth: 3,
-                            hover: { size: 7 }
-                        },
-                        xaxis: {
-                            categories: [
-                                'K01 (ATPH)', 
-                                'K02 (APHP)', 
-                                'K03 (AKL)', 
-                                'K04 (TKRO)', 
-                                'K05 (TKJ)'
-                            ],
-                            labels: {
-                                style: {
-                                    colors: ['#374151', '#374151', '#374151', '#374151', '#374151'],
-                                    fontSize: '12px',
-                                    fontWeight: 600
-                                }
-                            }
-                        },
-                        yaxis: {
-                            show: false // Sembunyikan angka koordinat sumbu agar lebih bersih
-                        },
-                        fill: {
-                            opacity: 0.4,
-                            colors: ['#3b82f6']
-                        },
-                        stroke: {
-                            show: true,
-                            width: 3,
-                            colors: ['#2563eb'],
-                            dashArray: 0
-                        },
-                        tooltip: {
-                            y: {
-                                formatter: function(val) {
-                                    return val + " Poin";
-                                }
-                            }
-                        }
-                    };
+        document.addEventListener("DOMContentLoaded", function() {
+            const riasecScores = @json($latestScore->riasec_scores);
+            const scoreData = ['r', 'i', 'a', 's', 'e', 'c'].map(function(dimensi) {
+                return Number(riasecScores[dimensi] || 0);
+            });
+            const categoriesList = ['Realistic (R)', 'Investigative (I)', 'Artistic (A)', 'Social (S)', 'Enterprising (E)', 'Conventional (C)'];
 
-                    var chart = new ApexCharts(document.querySelector("#radarChart"), options);
-                    chart.render();
-                });
-            </script>
+            // 1. Konfigurasi Grafik Radar
+            var radarOptions = {
+                series: [{
+                    name: 'Skor RIASEC',
+                    data: scoreData,
+                }],
+                chart: {
+                    height: 320,
+                    type: 'radar',
+                    toolbar: { show: false }
+                },
+                colors: ['#3b82f6'],
+                markers: {
+                    size: 5,
+                    colors: ['#ffffff'],
+                    strokeColors: '#3b82f6',
+                    strokeWidth: 3,
+                },
+                xaxis: {
+                    categories: categoriesList,
+                    labels: {
+                        style: {
+                            colors: ['#374151', '#374151', '#374151', '#374151', '#374151'],
+                            fontSize: '12px',
+                            fontWeight: 600
+                        }
+                    }
+                },
+                yaxis: { show: false },
+                fill: {
+                    opacity: 0.4,
+                    colors: ['#3b82f6']
+                },
+                stroke: {
+                    show: true,
+                    width: 3,
+                    colors: ['#2563eb']
+                },
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return val + "%";
+                        }
+                    }
+                }
+            };
+            var radarChart = new ApexCharts(document.querySelector("#radarChart"), radarOptions);
+            radarChart.render();
+
+            // 2. Konfigurasi Grafik Batang (Bar Chart) yang Menarik
+            var barOptions = {
+                series: [{
+                    name: 'Nilai RIASEC',
+                    data: scoreData
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 300,
+                    toolbar: { show: false }
+                },
+                plotOptions: {
+                    bar: {
+                        borderRadius: 8,
+                        distributed: true, // Warna batang berbeda-beda setiap kriteria agar estetik
+                        columnWidth: '55%',
+                    }
+                },
+                colors: ['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#14b8a6'],
+                dataLabels: {
+                    enabled: false
+                },
+                xaxis: {
+                    categories: categoriesList,
+                    labels: {
+                        style: {
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            colors: '#374151'
+                        }
+                    }
+                },
+                yaxis: {
+                    max: 100
+                },
+                legend: {
+                    show: false
+                },
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return val + "%";
+                        }
+                    }
+                }
+            };
+            var barChart = new ApexCharts(document.querySelector("#barChart"), barOptions);
+            barChart.render();
+        });
+    </script>
     @endif
 </x-app-layout>

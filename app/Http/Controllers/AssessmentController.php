@@ -65,16 +65,73 @@ class AssessmentController extends Controller
             'answers.required' => 'Silakan jawab seluruh pertanyaan bakat terlebih dahulu.',
         ]);
 
+        // Simpan jawaban Fase 2 ke session, kalkulasi dipindah ke Fase 3
+        session(['fase2_answers' => $request->input('answers')]);
+
+        return redirect()->route('assessment.fase3'); // Menggunakan nama route yang baru
+    }
+
+    // ================= FASE 3 (BARU) =================
+    public function fase3()
+    {
+        // Pastikan Fase 1 dan 2 sudah selesai
+        if (!session()->has('fase1_answers') || !session()->has('fase2_answers')) {
+            return redirect()->route('assessment.fase1')->with('error', 'Selesaikan Fase sebelumnya terlebih dahulu.');
+        }
+
+        $questions = Question::with('criteria')->where('fase', 3)->get();
+        
+        // Logika Waktu: 1 soal = 1 menit
+        $jumlahSoal = $questions->count();
+        $timeLimitInSeconds = $jumlahSoal * 60; 
+
+        return view('assessment.fase3', compact('questions', 'timeLimitInSeconds'));
+    }
+
+    public function storefase3(Request $request)
+    {
+        // Validasi opsional, tergantung jika user men-submit form kosong ketika waktu habis
+        $request->validate([
+             'jawaban' => 'nullable|array', // Bisa nullable jika waktu habis dan ada soal kosong
+        ]);
+
+        // Ambil semua jawaban
         $fase1Answers = session('fase1_answers', []);
-        $fase2Answers = $request->input('answers');
-        $answers = $fase1Answers + $fase2Answers;
+        $fase2Answers = session('fase2_answers', []);
+        $fase3Answers = $request->input('jawaban') ?? []; // Menggunakan input 'jawaban' sesuai view form
+        
+        // Gabungkan seluruh fase
+        $answers = $fase1Answers + $fase2Answers + $fase3Answers;
+
+        $riasecScores = [];
+        $riasecMaxScores = [];
+        foreach (['r', 'i', 'a', 's', 'e', 'c'] as $dimensi) {
+            $riasecScores[$dimensi] = 0;
+            $riasecMaxScores[$dimensi] = 0;
+        }
+
+        $riasecQuestions = Question::where('fase', 1)->get(['id', 'kode_indikator']);
+        foreach ($riasecQuestions as $question) {
+            $dimensi = strtolower(substr($question->kode_indikator ?? '', 0, 1));
+            if (!array_key_exists($dimensi, $riasecScores)) {
+                continue;
+            }
+
+            $riasecMaxScores[$dimensi] += 5;
+            $riasecScores[$dimensi] += min(5, max(0, (int) ($fase1Answers[$question->id] ?? 0)));
+        }
+
+        foreach ($riasecScores as $dimensi => $score) {
+            $maxScore = $riasecMaxScores[$dimensi];
+            $riasecScores[$dimensi] = $maxScore > 0
+                ? round(($score / $maxScore) * 100, 2)
+                : 0;
+        }
 
         $allCriteria = Criteria::all();
         $studentScoresRaw = [];
-        $maxPossibleScores = []; // Tambahan: Menyimpan potensi skor maksimal
+        $maxPossibleScores = []; 
         $scoresPerCriteria = [];
-        
-        // Optimasi: Jadikan dictionary/hash map agar tidak perlu loop berkali-kali nanti
         $criteriaMap = []; 
 
         foreach ($allCriteria as $criteria) {
@@ -82,7 +139,7 @@ class AssessmentController extends Controller
             $studentScoresRaw[$kode] = 0;
             $maxPossibleScores[$kode] = 0; 
             
-            $criteriaMap[$kode] = $criteria->id; // Mapping ID
+            $criteriaMap[$kode] = $criteria->id; 
             
             $scoresPerCriteria[$criteria->id] = [
                 'nama_jurusan' => $criteria->nama_kriteria,
@@ -111,36 +168,35 @@ class AssessmentController extends Controller
         $questions = Question::with('criteria')->whereIn('id', array_keys($answers))->get();
         
         foreach ($questions as $question) {
-            $jawabanSiswa = (int) $answers[$question->id];
+            $jawabanSiswa = $answers[$question->id];
             $rawIndikator = strtolower(preg_replace('/[0-9]+/', '', $question->kode_indikator ?? ''));
             
             $poinDasar = 0;
-            $maxPoinSoal = 5; // Asumsi skala likert max 5, dan benar max 5
+            $maxPoinSoal = 5; 
 
             if ($question->fase == 1) {
-                $poinDasar = $jawabanSiswa;
-            } elseif ($question->fase == 2) {
+                // Konversi eksplisit agar string diabaikan
+                $poinDasar = (int) $jawabanSiswa;
+            } elseif ($question->fase == 2 || $question->fase == 3) { // Tambahkan kondisi Fase 3 jika logikanya sama
                 $kunciJawaban = (int) ($question->kunci_jawaban ?? 1);
-                if ($jawabanSiswa === $kunciJawaban) {
+                // Karena jawaban Fase 3 mungkin huruf "A" atau "B", sesuaikan validasinya
+                if ($jawabanSiswa === $kunciJawaban || $jawabanSiswa === $question->kunci_jawaban) {
                     $poinDasar = 5;
                 }
             }
 
             if (isset($matrixKorelasi[$rawIndikator])) {
                 foreach ($matrixKorelasi[$rawIndikator] as $kodeJurusan => $bobotPengali) {
-                    // Skor aktual siswa
                     $tambahSkor = $poinDasar * $bobotPengali;
                     $studentScoresRaw[$kodeJurusan] += $tambahSkor;
-
-                    // Skor maksimal jika siswa menjawab sempurna (untuk normalisasi)
                     $maxPossibleScores[$kodeJurusan] += ($maxPoinSoal * $bobotPengali);
 
-                    // Map ke kriteria tanpa nested loop (Lebih efisien)
                     if (isset($criteriaMap[$kodeJurusan])) {
                         $critId = $criteriaMap[$kodeJurusan];
                         if ($question->fase == 1) {
                             $scoresPerCriteria[$critId]['skor_minat'] += $tambahSkor;
                         } else {
+                            // Fase 2 dan 3 masuk ke skor bakat/pengetahuan
                             $scoresPerCriteria[$critId]['skor_bakat'] += $tambahSkor;
                         }
                     }
@@ -149,7 +205,7 @@ class AssessmentController extends Controller
         }
 
         // ==========================================
-        // PROSES NORMALISASI SKOR KE SKALA 0-100
+        // PROSES NORMALISASI SKOR
         // ==========================================
         $normalizedScores = [];
         $highestDetailScore = -1;
@@ -158,13 +214,10 @@ class AssessmentController extends Controller
         foreach ($scoresPerCriteria as $id => $data) {
             $kode = $data['kode_jurusan'];
             $rawScore = $studentScoresRaw[$kode] ?? 0;
-            $maxScore = $maxPossibleScores[$kode] > 0 ? $maxPossibleScores[$kode] : 1; // Cegah division by zero
+            $maxScore = $maxPossibleScores[$kode] > 0 ? $maxPossibleScores[$kode] : 1; 
             
-            // Hitung persentase kecocokan (Skala 100)
             $persentase = round(($rawScore / $maxScore) * 100, 2);
             $normalizedScores[$kode] = $persentase;
-
-            // Update skor di details dengan persentase (bukan raw score yang bias)
             $scoresPerCriteria[$id]['total_skor'] = $persentase;
 
             if ($persentase > $highestDetailScore) {
@@ -173,25 +226,28 @@ class AssessmentController extends Controller
             }
         }
 
-        // Hitung K-Means menggunakan data NORMALISASI, bukan raw score!
+        // K-Means
         $recommendedCluster = $this->calculateKMeans($normalizedScores);
 
         AssessmentScore::updateOrCreate(
             ['user_id' => auth()->id()],
             array_merge(
-                $normalizedScores, // Simpan persentase ke database, bukan raw bias
+                $normalizedScores, 
                 [
                     'criteria_id'         => $recommendedJurusanId, 
                     'score'               => $highestDetailScore,
                     'details'             => json_encode($scoresPerCriteria), 
+                    'riasec_scores'       => $riasecScores,
                     'recommended_cluster' => $recommendedCluster 
                 ]
             )
         );
 
+        // Bersihkan session
         Session::forget('fase1_answers');
+        Session::forget('fase2_answers');
 
-        return redirect()->route('dashboard')->with('success', 'Analisis Penjurusan berhasil! Rekomendasi jurusan Anda telah diperbarui.');
+        return redirect()->route('dashboard')->with('success', 'Analisis Penjurusan Fase 3 berhasil! Rekomendasi jurusan Anda telah diperbarui.');
     }
 
     private function calculateKMeans($studentScores)
@@ -219,15 +275,49 @@ class AssessmentController extends Controller
     public function dashboard()
     {
         $latestScore = AssessmentScore::where('user_id', auth()->id())->latest()->first();
-        
-        $details = [];
-        if ($latestScore && $latestScore->details) {
-            $details = json_decode($latestScore->details, true);
-            usort($details, function($a, $b) {
-                return $b['total_skor'] <=> $a['total_skor'];
-            });
+        $riasecInsight = null;
+
+        if ($latestScore && is_array($latestScore->riasec_scores)) {
+            $riasecProfiles = [
+                'r' => [
+                    'label' => 'Realistic',
+                    'description' => 'Anda lebih menonjol pada kemampuan Realistic. Anda cenderung menyukai kegiatan praktik, penggunaan alat atau mesin, serta pekerjaan yang menghasilkan sesuatu secara nyata.',
+                ],
+                'i' => [
+                    'label' => 'Investigative',
+                    'description' => 'Anda lebih menonjol pada kemampuan Investigative. Anda cenderung tertarik menganalisis masalah, menggunakan logika, melakukan pengamatan, dan mencari solusi berdasarkan fakta.',
+                ],
+                'a' => [
+                    'label' => 'Artistic',
+                    'description' => 'Anda lebih menonjol pada kemampuan Artistic. Anda cenderung memiliki imajinasi, menyukai kebebasan berekspresi, serta tertarik menciptakan ide atau karya yang unik.',
+                ],
+                's' => [
+                    'label' => 'Social',
+                    'description' => 'Anda lebih menonjol pada kemampuan Social. Anda cenderung senang berkomunikasi, membantu orang lain, bekerja sama, dan berbagi pengetahuan.',
+                ],
+                'e' => [
+                    'label' => 'Enterprising',
+                    'description' => 'Anda lebih menonjol pada kemampuan Enterprising. Anda cenderung percaya diri dalam menyampaikan ide, memimpin, mengambil keputusan, dan mengelola kegiatan.',
+                ],
+                'c' => [
+                    'label' => 'Conventional',
+                    'description' => 'Anda lebih menonjol pada kemampuan Conventional. Anda cenderung teliti, teratur, menyukai data atau angka, serta nyaman bekerja dengan prosedur yang jelas.',
+                ],
+            ];
+
+            $topDimension = collect($latestScore->riasec_scores)
+                ->only(array_keys($riasecProfiles))
+                ->sortDesc()
+                ->keys()
+                ->first();
+
+            if ($topDimension) {
+                $riasecInsight = array_merge($riasecProfiles[$topDimension], [
+                    'score' => $latestScore->riasec_scores[$topDimension],
+                ]);
+            }
         }
 
-        return view('dashboard', compact('details', 'latestScore'));
+        return view('dashboard', compact('latestScore', 'riasecInsight'));
     }
 }

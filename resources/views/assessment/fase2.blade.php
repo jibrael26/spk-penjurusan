@@ -47,8 +47,8 @@
                     <a href="{{ route('assessment.fase1') }}" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 font-semibold transition-all">
                         &larr; Kembali ke Fase 1
                     </a>
-                    <button type="submit" class="px-8 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-semibold shadow-md transition-all">
-                        Simpan Jawaban & Proses Penjurusan
+                    <button type="submit" class="px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-semibold shadow-md transition-all">
+                        Lanjut ke Tes Berikut (Fase 3) &rarr;
                     </button>
                 </div>
             </form>

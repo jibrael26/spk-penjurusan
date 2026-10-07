@@ -42,6 +42,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tes-penjurusan/fase-2', [AssessmentController::class, 'createFase2'])->name('assessment.fase2');
     Route::post('/tes-penjurusan/fase-2', [AssessmentController::class, 'storeFase2'])->name('assessment.storeFase2');
 
+    Route::get('/tes-penjurusan/fase-3', [App\Http\Controllers\AssessmentController::class, 'fase3'])->name('assessment.fase3');
+    Route::post('/tes-penjurusan/fase-3', [App\Http\Controllers\AssessmentController::class, 'storeFase3'])->name('assessment.storeFase3');
+
 });
 
 

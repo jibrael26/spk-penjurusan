@@ -39,9 +39,35 @@
 
                     <!-- BARU: Input Kode Indikator -->
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Kode Indikator</label>
-                        <input type="text" name="kode_indikator" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Contoh: R1, Gf1 (Boleh dikosongkan)">
-                    </div>
+    <label class="block text-sm font-medium text-gray-700 mb-1">Kode Indikator</label>
+    
+    @php
+        // Normalisasi data lama (misal "R1" atau "Gf2" menjadi "r" atau "gf") agar otomatis terpilih saat proses Edit
+        $kodeInd = isset($question) ? strtolower(preg_replace('/[0-9]+/', '', $question->kode_indikator)) : strtolower(old('kode_indikator'));
+    @endphp
+
+    <select name="kode_indikator" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+        <option value="">-- Kosongkan / Tidak Ada --</option>
+        
+        <optgroup label="Fase 1: Minat (RIASEC)">
+            <option value="R" {{ $kodeInd === 'r' ? 'selected' : '' }}>Realistic (R)</option>
+            <option value="I" {{ $kodeInd === 'i' ? 'selected' : '' }}>Investigative (I)</option>
+            <option value="A" {{ $kodeInd === 'a' ? 'selected' : '' }}>Artistic (A)</option>
+            <option value="S" {{ $kodeInd === 's' ? 'selected' : '' }}>Social (S)</option>
+            <option value="E" {{ $kodeInd === 'e' ? 'selected' : '' }}>Enterprising (E)</option>
+            <option value="C" {{ $kodeInd === 'c' ? 'selected' : '' }}>Conventional (C)</option>
+        </optgroup>
+        
+        <optgroup label="Fase 2 & 3: Bakat Dasar & Lanjutan">
+            <option value="Gf" {{ $kodeInd === 'gf' ? 'selected' : '' }}>Fluid Reasoning (Gf)</option>
+            <option value="Gc" {{ $kodeInd === 'gc' ? 'selected' : '' }}>Comprehension-Knowledge (Gc)</option>
+            <option value="Gv" {{ $kodeInd === 'gv' ? 'selected' : '' }}>Visual Processing (Gv)</option>
+            <option value="Gq" {{ $kodeInd === 'gq' ? 'selected' : '' }}>Quantitative Knowledge (Gq)</option>
+            <option value="Gwm" {{ $kodeInd === 'gwm' ? 'selected' : '' }}>Short-Term Working Memory (Gwm)</option>
+            <option value="Gs" {{ $kodeInd === 'gs' ? 'selected' : '' }}>Processing Speed (Gs)</option>
+        </optgroup>
+    </select>
+</div>
 
                     <!-- BARU: Input Kunci Jawaban -->
                     <div class="mb-6">
@@ -55,6 +81,17 @@
                         </select>
                         <p class="text-xs text-gray-500 mt-1">*Pilih kunci jawaban khusus untuk soal Fase 2.</p>
                     </div>
+
+                            <div class="mb-4">
+                <label for="fase" class="block text-sm font-medium text-gray-700">Fase Pertanyaan</label>
+                <select name="fase" id="fase" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                    <option value="" disabled selected>Pilih Fase...</option>
+                    <option value="1" {{ (old('fase') == '1' || (isset($question) && $question->fase == 1)) ? 'selected' : '' }}>Fase 1 (Minat)</option>
+                    <option value="2" {{ (old('fase') == '2' || (isset($question) && $question->fase == 2)) ? 'selected' : '' }}>Fase 2 (Bakat Dasar)</option>
+                    <!-- Tambahan Opsi Fase 3 -->
+                    <option value="3" {{ (old('fase') == '3' || (isset($question) && $question->fase == 3)) ? 'selected' : '' }}>Fase 3 (Bakat Lanjutan / Berwaktu)</option>
+                </select>
+            </div>
 
                     <div class="mb-4 p-4 border border-dashed border-gray-300 rounded-lg bg-gray-50">
         <label class="block text-sm font-medium text-gray-700 mb-1">Upload Gambar Pendukung (Opsional)</label>
@@ -112,8 +149,10 @@
                                         <td class="px-6 py-4 text-center">
                                             @if($q->fase == 1)
                                                 <span class="bg-emerald-50 text-emerald-700 py-1 px-2.5 rounded-full text-xs font-medium">Fase 1</span>
-                                            @else
+                                            @elseif($q->fase == 2)
                                                 <span class="bg-amber-50 text-amber-700 py-1 px-2.5 rounded-full text-xs font-medium">Fase 2</span>
+                                            @elseif($q->fase == 3)
+                                                <span class="px-2 py-1 text-xs font-bold bg-blue-100 text-blue-700 rounded-full">Fase 3</span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 text-center">

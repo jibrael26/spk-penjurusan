@@ -281,7 +281,7 @@ public function dashboard()
         $request->validate([
             'teks_pertanyaan' => 'required|string',
             'criteria_id'     => 'required|exists:criteria,id',
-            'fase'            => 'required|in:1,2',
+            'fase'            => 'required|in:1,2,3',
             'kode_indikator'  => 'nullable|string|max:10',
             'kunci_jawaban'   => 'nullable|string|max:10',
             'gambar'          => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
@@ -402,7 +402,7 @@ public function dashboard()
         $request->validate([
             'teks_pertanyaan' => 'required|string',
             'criteria_id'     => 'required|exists:criteria,id',
-            'fase'            => 'required|in:1,2',
+            'fase'            => 'required|in:1,2,3',
             'opsi_jawaban'    => 'nullable|array', 
             'gambar'          => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', 
         ]);

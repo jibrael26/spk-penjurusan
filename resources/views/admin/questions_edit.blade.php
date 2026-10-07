@@ -70,15 +70,42 @@
                     <select name="fase" id="fase_selector" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" required>
                         <option value="1" {{ (old('fase', $question->fase) == 1) ? 'selected' : '' }}>Fase 1 (Angket Likert)</option>
                         <option value="2" {{ (old('fase', $question->fase) == 2) ? 'selected' : '' }}>Fase 2 (Pilihan Ganda A-E)</option>
+                        <option value="3" {{ (isset($question) && $question->fase == 3) ? 'selected' : '' }}>Fase 3 (Soal Berwaktu)</option>
                     </select>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Kode Indikator</label>
-                    <input type="text" name="kode_indikator" value="{{ old('kode_indikator', $question->kode_indikator) }}" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Contoh: R1, Gf1 (Boleh dikosongkan)">
-                </div>
+                <div class="mb-4">
+    <label class="block text-sm font-medium text-gray-700 mb-1">Kode Indikator</label>
+    
+    @php
+        // Normalisasi data lama (misal "R1" atau "Gf2" menjadi "r" atau "gf") agar otomatis terpilih saat proses Edit
+        $kodeInd = isset($question) ? strtolower(preg_replace('/[0-9]+/', '', $question->kode_indikator)) : strtolower(old('kode_indikator'));
+    @endphp
+
+    <select name="kode_indikator" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+        <option value="">-- Kosongkan / Tidak Ada --</option>
+        
+        <optgroup label="Fase 1: Minat (RIASEC)">
+            <option value="R" {{ $kodeInd === 'r' ? 'selected' : '' }}>Realistic (R)</option>
+            <option value="I" {{ $kodeInd === 'i' ? 'selected' : '' }}>Investigative (I)</option>
+            <option value="A" {{ $kodeInd === 'a' ? 'selected' : '' }}>Artistic (A)</option>
+            <option value="S" {{ $kodeInd === 's' ? 'selected' : '' }}>Social (S)</option>
+            <option value="E" {{ $kodeInd === 'e' ? 'selected' : '' }}>Enterprising (E)</option>
+            <option value="C" {{ $kodeInd === 'c' ? 'selected' : '' }}>Conventional (C)</option>
+        </optgroup>
+        
+        <optgroup label="Fase 2 & 3: Bakat Dasar & Lanjutan">
+            <option value="Gf" {{ $kodeInd === 'gf' ? 'selected' : '' }}>Fluid Reasoning (Gf)</option>
+            <option value="Gc" {{ $kodeInd === 'gc' ? 'selected' : '' }}>Comprehension-Knowledge (Gc)</option>
+            <option value="Gv" {{ $kodeInd === 'gv' ? 'selected' : '' }}>Visual Processing (Gv)</option>
+            <option value="Gq" {{ $kodeInd === 'gq' ? 'selected' : '' }}>Quantitative Knowledge (Gq)</option>
+            <option value="Gwm" {{ $kodeInd === 'gwm' ? 'selected' : '' }}>Short-Term Working Memory (Gwm)</option>
+            <option value="Gs" {{ $kodeInd === 'gs' ? 'selected' : '' }}>Processing Speed (Gs)</option>
+        </optgroup>
+    </select>
+</div>
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Kunci Jawaban</label>
