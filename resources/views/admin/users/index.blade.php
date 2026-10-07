@@ -24,7 +24,7 @@
                     @if(isset($jurusanTerbanyak) && $jurusanTerbanyak)
                         <p class="text-sm text-gray-500 mb-4 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg inline-block font-medium">
                             Terbanyak direkomendasikan: 
-                            <span class="font-bold text-emerald-800">{{ $jurusanTerbanyak->recommended_major }}</span> 
+                            <span class="font-bold text-emerald-800">{{ $jurusanTerbanyak->recommended_cluster }}</span> 
                             ({{ $jurusanTerbanyak->total }} siswa)
                         </p>
                     @endif
@@ -36,17 +36,26 @@
 
             <!-- Section 2: Tabel Hasil Clustering K-Means -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <div class="mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Hasil Pengelompokan (K-Means Clustering)</h3>
-                    <p class="text-sm text-gray-500 mt-1">Siswa dikelompokkan secara otomatis ke dalam klaster berdasarkan kedekatan jarak nilai kriteria mereka.</p>
+                <div class="mb-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800">Hasil Pengelompokan (K-Means Clustering)</h3>
+                        <p class="text-sm text-gray-500 mt-1">Siswa dikelompokkan secara otomatis ke dalam jurusan berdasarkan kedekatan jarak nilai kriteria mereka.</p>
+                    </div>
+                    <a href="{{ route('admin.export.kmeans') }}"
+                       class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Export Hasil K-Means
+                    </a>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    @if(isset($hasilCluster) && count($hasilCluster) > 0)
-                        @foreach($hasilCluster as $index => $cluster)
+                    @if(isset($hasilCluster) && $hasilCluster->count() > 0)
+                        @foreach($hasilCluster as $jurusan => $cluster)
                             <div class="border border-gray-100 rounded-xl p-4 bg-gradient-to-b from-gray-50 to-white shadow-xs">
                                 <div class="flex items-center justify-between border-b pb-2 mb-3">
-                                    <h4 class="font-bold text-indigo-600">Cluster {{ $index + 1 }}</h4>
+                                    <h4 class="font-bold text-indigo-600">{{ $jurusan }}</h4>
                                     <span class="text-xs bg-indigo-50 text-indigo-700 font-semibold px-2.5 py-0.5 rounded-full">
                                         {{ count($cluster) }} Siswa
                                     </span>

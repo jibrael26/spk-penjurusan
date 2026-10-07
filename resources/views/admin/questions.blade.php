@@ -113,11 +113,58 @@
         <div class="lg:col-span-2">
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-full flex flex-col">
                 <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-                    <h3 class="text-base font-semibold text-gray-900">Daftar Pertanyaan Aktif</h3>
-                    <span class="text-xs font-medium bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-900">Daftar Pertanyaan Aktif</h3>
+                        <p class="text-xs text-gray-500 mt-1">Gunakan filter untuk menemukan soal dengan cepat.</p>
+                    </div>
+                    <span class="text-xs font-medium bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full whitespace-nowrap">
                         Total: {{ isset($questions) ? $questions->total() : 0 }}
                     </span>
                 </div>
+
+                <form method="GET" action="{{ route('admin.pertanyaan') }}" class="p-5 border-b border-gray-100 bg-white">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                        <div class="xl:col-span-2">
+                            <label for="question-search" class="block text-xs font-semibold text-gray-600 mb-1.5">Cari soal</label>
+                            <input id="question-search" type="search" name="search" value="{{ request('search') }}"
+                                   placeholder="Cari teks pertanyaan atau kode indikator..."
+                                   class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        </div>
+                        <div>
+                            <label for="question-phase" class="block text-xs font-semibold text-gray-600 mb-1.5">Filter fase</label>
+                            <select id="question-phase" name="fase"
+                                    class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option value="">Semua fase</option>
+                                <option value="1" @selected(request('fase') === '1')>Fase 1 - Minat</option>
+                                <option value="2" @selected(request('fase') === '2')>Fase 2 - Bakat Dasar</option>
+                                <option value="3" @selected(request('fase') === '3')>Fase 3 - Bakat Lanjutan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="question-criteria" class="block text-xs font-semibold text-gray-600 mb-1.5">Filter kriteria</label>
+                            <select id="question-criteria" name="criteria_id"
+                                    class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option value="">Semua kriteria</option>
+                                @foreach($criteria as $crit)
+                                    <option value="{{ $crit->id }}" @selected((string) request('criteria_id') === (string) $crit->id)>
+                                        {{ $crit->kode_kriteria }} - {{ $crit->nama_kriteria }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 mt-4">
+                        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-medium text-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            Terapkan Filter
+                        </button>
+                        @if(request()->hasAny(['search', 'fase', 'criteria_id']))
+                            <a href="{{ route('admin.pertanyaan') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition font-medium text-sm">
+                                Reset
+                            </a>
+                        @endif
+                    </div>
+                </form>
                 
                 <div class="overflow-x-auto flex-grow">
                     <table class="w-full text-left text-sm text-gray-600">

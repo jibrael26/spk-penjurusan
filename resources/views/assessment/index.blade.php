@@ -52,6 +52,20 @@
                             @endif
                         </div>
 
+                        @if($riasecInsight)
+                            <div class="mt-6 text-left rounded-lg border border-indigo-100 bg-indigo-50 p-6">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                                    <h4 class="font-bold text-indigo-900">Karakteristik Minat Utama</h4>
+                                    <span class="inline-flex w-fit rounded-full bg-white px-3 py-1 text-xs font-bold text-indigo-600 shadow-sm">
+                                        {{ $riasecInsight['label'] }} {{ $riasecInsight['score'] }}%
+                                    </span>
+                                </div>
+                                <p class="text-sm leading-relaxed text-indigo-900/80">
+                                    {{ $riasecInsight['description'] }}
+                                </p>
+                            </div>
+                        @endif
+
                         <!-- Tombol Aksi Navigasi (Ulangi Tes & Kembali ke Beranda) -->
                         <div class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
                             <a href="{{ route('assessment.fase1') }}" class="text-sm text-blue-600 hover:underline font-semibold">

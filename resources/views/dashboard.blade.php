@@ -78,25 +78,6 @@
                         @endif
                     </div>
 
-                    <!-- Grafik 2: Bar Chart RIASEC -->
-                    <div class="bg-white rounded-[2rem] p-6 sm:p-8 shadow-sm border border-gray-100">
-                        <div class="flex items-center justify-between mb-4 border-b pb-4">
-                            <div>
-                                <h4 class="text-xl font-bold text-gray-900">Perolehan Nilai RIASEC</h4>
-                                <p class="text-gray-400 text-xs mt-0.5">Perbandingan persentase skor setiap dimensi minat</p>
-                            </div>
-                        </div>
-
-                        @if(isset($latestScore) && $latestScore && $latestScore->riasec_scores)
-                            <div id="barChart" class="w-full flex justify-center py-2"></div>
-                        @else
-                            <div class="py-12 text-center">
-                                <h5 class="text-base font-semibold text-gray-700">Grafik Batang Belum Tersedia</h5>
-                                <p class="text-sm text-gray-400 mt-1">Lakukan tes untuk melihat grafik batang perolehan nilai.</p>
-                            </div>
-                        @endif
-                    </div>
-
                 </div>
 
                 <!-- Kartu Samping: Status, Progres, & Tombol Riwayat Asesmen -->
@@ -224,54 +205,6 @@
             var radarChart = new ApexCharts(document.querySelector("#radarChart"), radarOptions);
             radarChart.render();
 
-            // 2. Konfigurasi Grafik Batang (Bar Chart) yang Menarik
-            var barOptions = {
-                series: [{
-                    name: 'Nilai RIASEC',
-                    data: scoreData
-                }],
-                chart: {
-                    type: 'bar',
-                    height: 300,
-                    toolbar: { show: false }
-                },
-                plotOptions: {
-                    bar: {
-                        borderRadius: 8,
-                        distributed: true, // Warna batang berbeda-beda setiap kriteria agar estetik
-                        columnWidth: '55%',
-                    }
-                },
-                colors: ['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#14b8a6'],
-                dataLabels: {
-                    enabled: false
-                },
-                xaxis: {
-                    categories: categoriesList,
-                    labels: {
-                        style: {
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            colors: '#374151'
-                        }
-                    }
-                },
-                yaxis: {
-                    max: 100
-                },
-                legend: {
-                    show: false
-                },
-                tooltip: {
-                    y: {
-                        formatter: function(val) {
-                            return val + "%";
-                        }
-                    }
-                }
-            };
-            var barChart = new ApexCharts(document.querySelector("#barChart"), barOptions);
-            barChart.render();
         });
     </script>
     @endif

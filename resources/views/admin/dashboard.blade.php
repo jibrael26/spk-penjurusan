@@ -3,7 +3,7 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <!-- Header Halaman (Tetap) -->
-    <div class="mb-8 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
+    <div class="mb-8 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
         <div>
             <p class="text-sm font-semibold text-cyan-600 mb-2">Selamat datang kembali, {{ explode(' ', Auth::user()->name)[0] }}</p>
             <h1 class="text-3xl font-black tracking-tight text-slate-900">Pantau rekomendasi jurusan</h1>
@@ -69,15 +69,19 @@
         
         <!-- Kolom Kiri (Lebar 2/3): Grafik Distribusi Jurusan -->
         <div class="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+            <div class="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                     <h3 class="text-base font-bold text-slate-900">Distribusi Rekomendasi Jurusan</h3>
                     <p class="mt-1 text-xs text-slate-500">Statistik jurusan yang direkomendasikan kepada siswa.</p>
                 </div>
+                <span class="inline-flex w-fit items-center gap-2 rounded-full bg-cyan-50 px-3 py-1.5 text-xs font-semibold text-cyan-700">
+                    <span class="h-2 w-2 rounded-full bg-cyan-500"></span>
+                    Data terkini
+                </span>
             </div>
-            <div class="p-4">
+            <div class="p-5 sm:p-6">
                 <!-- Kontainer ApexCharts: ID diubah menjadi jurusanApexChart -->
-                <div id="jurusanApexChart" class="w-full h-[300px]"></div>
+                <div id="jurusanApexChart" class="w-full min-h-[300px]"></div>
             </div>
         </div>
 
@@ -122,19 +126,17 @@
                 </div>
             </div>
 
-            <div class="p-6 bg-white rounded-lg shadow-md">
-                <h3 class="text-lg font-semibold mb-4">Statistik (Chart.js)</h3>
-                <!-- Kontainer Chart.js: ID diubah menjadi jurusanChartJs -->
-                <canvas id="jurusanChartJs" class="w-full h-64"></canvas>
-            </div>
         </div>
     </div>
 
     <!-- AREA BARU: Tabel Siswa Terbaru -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-            <h3 class="text-base font-bold text-slate-900">Aktivitas Tes Terbaru</h3>
-            <button class="text-sm font-medium text-cyan-600 hover:text-cyan-800">Lihat Laporan Lengkap</button>
+        <div class="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+                <h3 class="text-base font-bold text-slate-900">Aktivitas Tes Terbaru</h3>
+                <p class="mt-1 text-xs text-slate-500">Lima hasil assessment terbaru dari siswa.</p>
+            </div>
+            <a href="{{ route('admin.siswa') }}" class="text-sm font-semibold text-cyan-600 hover:text-cyan-800 transition-colors">Lihat semua siswa <span aria-hidden="true">→</span></a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600">
@@ -183,55 +185,6 @@
             </table>
         </div>
     </div>
-
-<!-- Load Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- Script Inisialisasi Chart.js -->
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Selector diubah menjadi jurusanChartJs
-        const ctx = document.getElementById('jurusanChartJs').getContext('2d');
-
-        const chartLabels = @json($labels ?? $chartLabels ?? []);
-        const chartData = @json($totals ?? $chartData ?? []);
-
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: chartLabels,
-                datasets: [{
-                    label: 'Jumlah Siswa',
-                    data: chartData,
-                    backgroundColor: [
-                        'rgba(54, 162, 235, 0.6)',
-                        'rgba(255, 99, 132, 0.6)',
-                        'rgba(255, 206, 86, 0.6)',
-                        'rgba(75, 192, 192, 0.6)'
-                    ],
-                    borderColor: [
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
-                        }
-                    }
-                }
-            }
-        });
-    });
-</script>
 
 <!-- Script Inisialisasi Grafik ApexCharts -->
 <script>

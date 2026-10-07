@@ -21,7 +21,9 @@ class AssessmentController extends Controller
     public function index()
     {
         $latestScore = AssessmentScore::where('user_id', auth()->id())->latest()->first();
-        return view('assessment.index', compact('latestScore'));
+        $riasecInsight = $this->getRiasecInsight($latestScore);
+
+        return view('assessment.index', compact('latestScore', 'riasecInsight'));
     }
 
     // ================= FASE 1 =================
@@ -275,49 +277,54 @@ class AssessmentController extends Controller
     public function dashboard()
     {
         $latestScore = AssessmentScore::where('user_id', auth()->id())->latest()->first();
-        $riasecInsight = null;
-
-        if ($latestScore && is_array($latestScore->riasec_scores)) {
-            $riasecProfiles = [
-                'r' => [
-                    'label' => 'Realistic',
-                    'description' => 'Anda lebih menonjol pada kemampuan Realistic. Anda cenderung menyukai kegiatan praktik, penggunaan alat atau mesin, serta pekerjaan yang menghasilkan sesuatu secara nyata.',
-                ],
-                'i' => [
-                    'label' => 'Investigative',
-                    'description' => 'Anda lebih menonjol pada kemampuan Investigative. Anda cenderung tertarik menganalisis masalah, menggunakan logika, melakukan pengamatan, dan mencari solusi berdasarkan fakta.',
-                ],
-                'a' => [
-                    'label' => 'Artistic',
-                    'description' => 'Anda lebih menonjol pada kemampuan Artistic. Anda cenderung memiliki imajinasi, menyukai kebebasan berekspresi, serta tertarik menciptakan ide atau karya yang unik.',
-                ],
-                's' => [
-                    'label' => 'Social',
-                    'description' => 'Anda lebih menonjol pada kemampuan Social. Anda cenderung senang berkomunikasi, membantu orang lain, bekerja sama, dan berbagi pengetahuan.',
-                ],
-                'e' => [
-                    'label' => 'Enterprising',
-                    'description' => 'Anda lebih menonjol pada kemampuan Enterprising. Anda cenderung percaya diri dalam menyampaikan ide, memimpin, mengambil keputusan, dan mengelola kegiatan.',
-                ],
-                'c' => [
-                    'label' => 'Conventional',
-                    'description' => 'Anda lebih menonjol pada kemampuan Conventional. Anda cenderung teliti, teratur, menyukai data atau angka, serta nyaman bekerja dengan prosedur yang jelas.',
-                ],
-            ];
-
-            $topDimension = collect($latestScore->riasec_scores)
-                ->only(array_keys($riasecProfiles))
-                ->sortDesc()
-                ->keys()
-                ->first();
-
-            if ($topDimension) {
-                $riasecInsight = array_merge($riasecProfiles[$topDimension], [
-                    'score' => $latestScore->riasec_scores[$topDimension],
-                ]);
-            }
-        }
+        $riasecInsight = $this->getRiasecInsight($latestScore);
 
         return view('dashboard', compact('latestScore', 'riasecInsight'));
+    }
+
+    private function getRiasecInsight(?AssessmentScore $assessmentScore): ?array
+    {
+        if (!$assessmentScore || !is_array($assessmentScore->riasec_scores)) {
+            return null;
+        }
+
+        $riasecProfiles = [
+            'r' => [
+                'label' => 'Realistic',
+                'description' => 'Anda lebih menonjol pada kemampuan Realistic. Anda cenderung menyukai kegiatan praktik, penggunaan alat atau mesin, serta pekerjaan yang menghasilkan sesuatu secara nyata.',
+            ],
+            'i' => [
+                'label' => 'Investigative',
+                'description' => 'Anda lebih menonjol pada kemampuan Investigative. Anda cenderung tertarik menganalisis masalah, menggunakan logika, melakukan pengamatan, dan mencari solusi berdasarkan fakta.',
+            ],
+            'a' => [
+                'label' => 'Artistic',
+                'description' => 'Anda lebih menonjol pada kemampuan Artistic. Anda cenderung memiliki imajinasi, menyukai kebebasan berekspresi, serta tertarik menciptakan ide atau karya yang unik.',
+            ],
+            's' => [
+                'label' => 'Social',
+                'description' => 'Anda lebih menonjol pada kemampuan Social. Anda cenderung senang berkomunikasi, membantu orang lain, bekerja sama, dan berbagi pengetahuan.',
+            ],
+            'e' => [
+                'label' => 'Enterprising',
+                'description' => 'Anda lebih menonjol pada kemampuan Enterprising. Anda cenderung percaya diri dalam menyampaikan ide, memimpin, mengambil keputusan, dan mengelola kegiatan.',
+            ],
+            'c' => [
+                'label' => 'Conventional',
+                'description' => 'Anda lebih menonjol pada kemampuan Conventional. Anda cenderung teliti, teratur, menyukai data atau angka, serta nyaman bekerja dengan prosedur yang jelas.',
+            ],
+        ];
+
+        $topDimension = collect($assessmentScore->riasec_scores)
+            ->only(array_keys($riasecProfiles))
+            ->sortDesc()
+            ->keys()
+            ->first();
+
+        return $topDimension
+            ? array_merge($riasecProfiles[$topDimension], [
+                'score' => $assessmentScore->riasec_scores[$topDimension],
+            ])
+            : null;
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB; 
 use Illuminate\Support\Facades\Storage;
 use App\Exports\AssessmentExport;
+use App\Exports\KMeansClusteringExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\User; 
 use App\Models\AssessmentScore; 
@@ -119,30 +120,27 @@ public function dashboard()
         }
 
         // ==========================================
-        // 4. LOGIKA K-MEANS CLUSTERING (MURNI SISWA)
+        // 4. PENGELOMPOKAN SISWA BERDASARKAN HASIL K-MEANS
         // ==========================================
         $siswaScores = User::where('is_admin', false)
             ->has('assessmentScore')
             ->with('assessmentScore')
             ->get();
-        
-        $datasetKMeans = [];
-        foreach ($siswaScores as $s) {$features = [
-                (float) ($s->assessmentScore->k01 ?? 0),
-                (float) ($s->assessmentScore->k02 ?? 0),
-                (float) ($s->assessmentScore->k03 ?? 0),
-                (float) ($s->assessmentScore->k04 ?? 0),
-                (float) ($s->assessmentScore->k05 ?? 0),
-            ];
 
-            $datasetKMeans[] = [
-                'user' => $s,
-                'features' => $features
-            ];
-        }
-
-        $k = min(3, count($datasetKMeans));
-        $hasilCluster = $this->kMeansClustering($datasetKMeans, $k);
+        // recommended_cluster adalah nama jurusan hasil K-Means yang disimpan
+        // saat siswa menyelesaikan assessment.
+        $hasilCluster = $siswaScores
+            ->filter(function ($siswa) {
+                return !empty($siswa->assessmentScore->recommended_cluster);
+            })
+            ->groupBy(function ($siswa) {
+                return $siswa->assessmentScore->recommended_cluster;
+            })
+            ->map(function ($siswaDalamJurusan) {
+                return $siswaDalamJurusan->map(function ($siswa) {
+                    return ['user' => $siswa];
+                })->values()->all();
+            });
 
         return view('admin.users.index', compact(
             'siswa', 
@@ -154,6 +152,14 @@ public function dashboard()
             'jurusanTerbanyak', 
             'hasilCluster'
         ));
+    }
+
+    public function exportKMeansClustering()
+    {
+        return Excel::download(
+            new KMeansClusteringExport(),
+            'hasil-clustering-kmeans-' . now()->format('Y-m-d-His') . '.xlsx'
+        );
     }
 
     // ==========================================
@@ -270,9 +276,27 @@ public function dashboard()
     // ==========================================
     // MANAJEMEN PERTANYAAN (BANK SOAL)
     // ==========================================
-    public function questions()
+    public function questions(Request $request)
     {
-        $questions = Question::with('criteria')->latest()->paginate(10);$criteria = Criteria::all();        
+        $questions = Question::with('criteria')
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->string('search')->toString();
+                $query->where(function ($questionQuery) use ($search) {
+                    $questionQuery->where('teks_pertanyaan', 'like', '%' . $search . '%')
+                        ->orWhere('kode_indikator', 'like', '%' . $search . '%');
+                });
+            })
+            ->when($request->filled('fase') && in_array($request->input('fase'), ['1', '2', '3'], true), function ($query) use ($request) {
+                $query->where('fase', $request->input('fase'));
+            })
+            ->when($request->filled('criteria_id') && is_numeric($request->input('criteria_id')), function ($query) use ($request) {
+                $query->where('criteria_id', $request->input('criteria_id'));
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        $criteria = Criteria::orderBy('kode_kriteria')->get();
         return view('admin.questions', compact('questions', 'criteria')); 
     }
 
