@@ -135,6 +135,16 @@ class AssessmentController extends Controller
         $maxPossibleScores = []; 
         $scoresPerCriteria = [];
         $criteriaMap = []; 
+        $chcIndicators = ['gf', 'gc', 'gv', 'gq', 'gwm', 'gs'];
+        $chcCorrectAnswers = array_fill_keys($chcIndicators, 0);
+        $chcQuestionCounts = array_fill_keys($chcIndicators, 0);
+
+        foreach (Question::whereIn('fase', [2, 3])->get(['kode_indikator']) as $question) {
+            $indicator = strtolower(preg_replace('/[0-9]+/', '', $question->kode_indikator ?? ''));
+            if (array_key_exists($indicator, $chcQuestionCounts)) {
+                $chcQuestionCounts[$indicator]++;
+            }
+        }
 
         foreach ($allCriteria as $criteria) {
             $kode = strtolower($criteria->kode_kriteria);
@@ -185,6 +195,10 @@ class AssessmentController extends Controller
                 if ($jawabanSiswa === $kunciJawaban || $jawabanSiswa === $question->kunci_jawaban) {
                     $poinDasar = 5;
                 }
+
+                if (array_key_exists($rawIndikator, $chcCorrectAnswers) && $poinDasar > 0) {
+                    $chcCorrectAnswers[$rawIndikator]++;
+                }
             }
 
             if (isset($matrixKorelasi[$rawIndikator])) {
@@ -230,6 +244,12 @@ class AssessmentController extends Controller
 
         // K-Means
         $recommendedCluster = $this->calculateKMeans($normalizedScores);
+        $chcScores = [];
+        foreach ($chcIndicators as $indicator) {
+            $chcScores[$indicator] = $chcQuestionCounts[$indicator] > 0
+                ? round(($chcCorrectAnswers[$indicator] / $chcQuestionCounts[$indicator]) * 100, 2)
+                : 0;
+        }
 
         AssessmentScore::updateOrCreate(
             ['user_id' => auth()->id()],
@@ -240,6 +260,7 @@ class AssessmentController extends Controller
                     'score'               => $highestDetailScore,
                     'details'             => json_encode($scoresPerCriteria), 
                     'riasec_scores'       => $riasecScores,
+                    'chc_scores'          => $chcScores,
                     'recommended_cluster' => $recommendedCluster 
                 ]
             )

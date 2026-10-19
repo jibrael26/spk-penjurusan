@@ -20,11 +20,13 @@ class AssessmentScore extends Model
         'criteria_id',         // Menyimpan ID Jurusan Rekomendasi (berdasarkan metode bobot)
         'score',               // Menyimpan skor total/akhir (berdasarkan metode bobot)
         'details',              // Menyimpan riwayat rincian perhitungan minat & bakat dalam format JSON
-        'riasec_scores'        // Menyimpan persentase skor enam dimensi RIASEC
+        'riasec_scores',       // Menyimpan persentase skor enam dimensi RIASEC
+        'chc_scores'           // Menyimpan persentase skor indikator bakat dasar
     ];
 
     protected $casts = [
         'riasec_scores' => 'array',
+        'chc_scores' => 'array',
     ];
 
     public function user()
