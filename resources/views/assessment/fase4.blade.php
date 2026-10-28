@@ -33,7 +33,26 @@
                         $hasInitialText = filled($currentQuestion->teks_awal);
                         $duration = (int) ($currentQuestion->bobot ?? 12);
                     @endphp
-                    <div id="current-question-card" class="question-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-amber-500 mb-6" data-duration="{{ $duration }}">
+                    @if($showPhase4Warning)
+                    <div id="phase4-warning" class="bg-white p-6 rounded-xl shadow-sm border border-amber-300 mb-6">
+                        <div class="flex items-start gap-3">
+                            <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 font-bold">!</div>
+                            <div>
+                                <h3 class="font-bold text-gray-900">Perhatian sebelum menjawab</h3>
+                                <p class="mt-1 text-sm leading-6 text-gray-600">
+                                    Setelah dimulai, teks awal akan tampil selama
+                                    <strong>{{ $duration }} detik</strong> dan dapat hilang atau berubah menjadi pertanyaan.
+                                    Perhatikan teks dengan saksama sebelum menjawab.
+                                </p>
+                            </div>
+                        </div>
+                        <button id="start-phase4" type="button" class="mt-5 w-full rounded-xl bg-amber-600 px-6 py-3 font-semibold text-white shadow-md transition hover:bg-amber-700">
+                            Saya Mengerti, Mulai Pertanyaan
+                        </button>
+                    </div>
+                    @endif
+
+                    <div id="current-question-card" class="question-card {{ $showPhase4Warning ? 'hidden' : '' }} bg-white p-6 rounded-xl shadow-sm border-l-4 border-amber-500 mb-6" data-duration="{{ $duration }}">
                         <div class="flex items-center justify-between mb-3">
                             <h3 id="question-text" class="font-semibold text-base text-gray-800 whitespace-pre-line">
                                 @if($hasInitialText)
@@ -67,7 +86,7 @@
                         <p class="mb-3 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                     <div class="flex justify-end mb-8">
-                        <button id="next-answer" name="action" value="next" type="submit" class="{{ $hasInitialText ? 'hidden' : '' }} px-8 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700 font-semibold shadow-md transition-all">
+                        <button id="next-answer" name="action" value="next" type="submit" class="{{ $showPhase4Warning ? 'hidden' : '' }} px-8 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700 font-semibold shadow-md transition-all">
                             Jawab & Tampilkan Berikutnya &rarr;
                         </button>
                     </div>
@@ -91,32 +110,57 @@
         </div>
     </div>
 
-    @if($currentQuestion && filled($currentQuestion->teks_awal))
+    @if($currentQuestion && ($showPhase4Warning || filled($currentQuestion->teks_awal)))
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const card = document.getElementById('current-question-card');
+                const warningEl = document.getElementById('phase4-warning');
+                const startEl = document.getElementById('start-phase4');
                 const timerEl = document.getElementById('question-timer');
                 const textEl = document.getElementById('question-text');
                 const optionsEl = document.getElementById('answer-options');
                 const submitEl = document.getElementById('next-answer');
+                const hasInitialText = @json(filled($currentQuestion->teks_awal));
+                const questionText = @json(($currentQuestion->kode_indikator ? '[' . $currentQuestion->kode_indikator . '] ' : '') . $currentQuestion->teks_pertanyaan);
                 let remaining = Number(card.dataset.duration) || 12;
 
                 const updateTimer = function () {
-                    timerEl.textContent = String(Math.floor(remaining / 60)).padStart(2, '0') + ':' + String(remaining % 60).padStart(2, '0');
+                    if (timerEl) {
+                        timerEl.textContent = String(Math.floor(remaining / 60)).padStart(2, '0') + ':' + String(remaining % 60).padStart(2, '0');
+                    }
                 };
 
-                updateTimer();
-                const interval = setInterval(function () {
-                    remaining--;
-                    updateTimer();
+                const revealQuestion = function () {
+                    textEl.textContent = questionText;
+                    optionsEl.classList.remove('hidden');
+                    submitEl.classList.remove('hidden');
+                };
 
-                    if (remaining <= 0) {
-                        clearInterval(interval);
-                        textEl.textContent = @json(($currentQuestion->kode_indikator ? '[' . $currentQuestion->kode_indikator . '] ' : '') . $currentQuestion->teks_pertanyaan);
-                        optionsEl.classList.remove('hidden');
-                        submitEl.classList.remove('hidden');
+                const startQuestion = function () {
+                    if (warningEl) warningEl.classList.add('hidden');
+                    card.classList.remove('hidden');
+                    if (!hasInitialText) {
+                        revealQuestion();
+                        return;
                     }
-                }, 1000);
+
+                    updateTimer();
+                    const interval = setInterval(function () {
+                        remaining--;
+                        updateTimer();
+
+                        if (remaining <= 0) {
+                            clearInterval(interval);
+                            revealQuestion();
+                        }
+                    }, 1000);
+                };
+
+                if (startEl) {
+                    startEl.addEventListener('click', startQuestion);
+                } else {
+                    startQuestion();
+                }
             });
         </script>
     @endif

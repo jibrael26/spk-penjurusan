@@ -3,30 +3,34 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <!-- Header Halaman (Tetap) -->
-    <div class="mb-8 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+    <div class="relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-6 py-7 text-white shadow-sm sm:px-8">
+        <div class="pointer-events-none absolute -right-12 -top-16 h-48 w-48 rounded-full border-[18px] border-white/5"></div>
+        <div class="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
-            <p class="text-sm font-semibold text-cyan-600 mb-2">Selamat datang kembali, {{ explode(' ', Auth::user()->name)[0] }}</p>
-            <h1 class="text-3xl font-black tracking-tight text-slate-900">Pantau rekomendasi jurusan</h1>
-            <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Kelola data siswa, instrumen tes, dan pantau hasil rekomendasi jurusan dari satu ruang kerja yang ringkas.</p>
+            <p class="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Dashboard admin</p>
+            <p class="text-sm font-semibold text-slate-300">Selamat datang kembali, {{ explode(' ', Auth::user()->name)[0] }}</p>
+            <h1 class="mt-1 text-3xl font-black tracking-tight text-white">Pantau rekomendasi jurusan</h1>
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-300">Kelola data siswa, instrumen tes, dan pantau hasil rekomendasi jurusan dari satu ruang kerja yang ringkas.</p>
         </div>
         
         <!-- Tombol Aksi Cepat -->
         <div class="flex flex-wrap gap-3">
-            <a href="{{ route('admin.siswa') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-sm font-semibold text-slate-700 rounded-xl hover:border-cyan-300 hover:text-cyan-700 shadow-sm transition-all">
+            <a href="{{ route('admin.siswa') }}" class="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white shadow-sm backdrop-blur transition-all hover:bg-white/20">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v6m3-3h-6M9 11a4 4 0 100-8 4 4 0 000 8zm-7 9a7 7 0 0114 0"></path></svg>
                 Data siswa
             </a>
-            <a href="{{ route('admin.pertanyaan') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-cyan-700 shadow-sm transition-all">
+            <a href="{{ route('admin.pertanyaan') }}" class="inline-flex items-center gap-2 rounded-xl bg-cyan-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-cyan-400">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 Kelola bank soal
             </a>
         </div>
+        </div>
     </div>
 
     <!-- Grid Statistik Cards (Tetap) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+    <div class="mb-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         <!-- Widget 1: Total Siswa -->
-        <a href="{{ route('admin.siswa') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between hover:-translate-y-0.5 hover:shadow-lg hover:border-cyan-200 transition-all">
+        <a href="{{ route('admin.siswa') }}" class="group flex items-center justify-between rounded-2xl border border-slate-200 border-l-4 border-l-cyan-500 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-lg">
             <div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Total siswa</p>
                 <h3 class="text-4xl font-black text-slate-900">{{ $totalSiswa }}</h3>
@@ -38,7 +42,7 @@
         </a>
 
         <!-- Widget 2: Bank Soal -->
-        <a href="{{ route('admin.pertanyaan') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between hover:-translate-y-0.5 hover:shadow-lg hover:border-violet-200 transition-all">
+        <a href="{{ route('admin.pertanyaan') }}" class="group flex items-center justify-between rounded-2xl border border-slate-200 border-l-4 border-l-violet-500 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-lg">
             <div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Bank pertanyaan</p>
                 <h3 class="text-4xl font-black text-slate-900">{{ $totalSoal }}</h3>
@@ -50,7 +54,7 @@
         </a>
 
         <!-- Widget 3: Tes Selesai -->
-        <div class="bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-800 flex items-center justify-between relative overflow-hidden">
+        <div class="relative flex items-center justify-between overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
             <div class="relative z-10">
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Tes diselesaikan</p>
                 <h3 class="text-4xl font-black text-white">{{ $totalSudahTes }}</h3>
@@ -65,10 +69,10 @@
     </div>
 
     <!-- AREA BARU: Grafik & Aktivitas Terbaru -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-8">
+    <div class="mb-8 grid grid-cols-1 gap-5 xl:grid-cols-3">
         
         <!-- Kolom Kiri (Lebar 2/3): Grafik Distribusi Jurusan -->
-        <div class="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:col-span-2">
             <div class="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                     <h3 class="text-base font-bold text-slate-900">Distribusi Rekomendasi Jurusan</h3>
@@ -79,7 +83,7 @@
                     Data terkini
                 </span>
             </div>
-            <div class="p-5 sm:p-6">
+            <div class="min-h-[330px] p-5 sm:p-6">
                 <!-- Kontainer ApexCharts: ID diubah menjadi jurusanApexChart -->
                 <div id="jurusanApexChart" class="w-full min-h-[300px]"></div>
             </div>
@@ -130,7 +134,7 @@
     </div>
 
     <!-- AREA BARU: Tabel Siswa Terbaru -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div class="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
                 <h3 class="text-base font-bold text-slate-900">Aktivitas Tes Terbaru</h3>
@@ -139,7 +143,7 @@
             <a href="{{ route('admin.siswa') }}" class="text-sm font-semibold text-cyan-600 hover:text-cyan-800 transition-colors">Lihat semua siswa <span aria-hidden="true">→</span></a>
         </div>
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-slate-600">
+            <table class="min-w-[700px] w-full text-left text-sm text-slate-600">
                 <thead class="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b border-slate-200">
                     <tr>
                         <th class="px-6 py-4">Nama Siswa</th>
@@ -150,16 +154,21 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse($recentTests as $test)
-                        <tr class="hover:bg-slate-50/50 transition-colors">
-                            <td class="px-6 py-4 font-medium text-slate-900">
-                                {{ $test->user?->name ?? 'Pengguna tidak ditemukan' }}
+                        <tr class="transition-colors hover:bg-cyan-50/30">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <span class="flex h-9 w-9 items-center justify-center rounded-full bg-cyan-50 text-xs font-bold text-cyan-700">
+                                        {{ strtoupper(substr($test->user?->name ?? '?', 0, 1)) }}
+                                    </span>
+                                    <span class="font-semibold text-slate-900">{{ $test->user?->name ?? 'Pengguna tidak ditemukan' }}</span>
+                                </div>
                             </td>
                             <td class="px-6 py-4 text-slate-500">
                                 {{ $test->created_at?->format('d M Y, H:i') ?? 'Waktu tidak tersedia' }}
                             </td>
                             <td class="px-6 py-4">
                                 @if($test->recommended_cluster)
-                                    <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                                    <span class="inline-flex max-w-[280px] truncate rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
                                         {{ $test->recommended_cluster }}
                                     </span>
                                 @else

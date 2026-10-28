@@ -309,7 +309,7 @@ public function dashboard()
             'fase'            => 'required|in:1,2,3,4',
             'bobot'           => 'nullable|integer|min:1|max:3600',
             'sembunyikan_teks' => 'nullable|boolean',
-            'kode_indikator'  => 'nullable|string|max:10',
+            'kode_indikator'  => 'required|string|in:R,I,A,S,E,C,Gf,Gc,Gv,Gq,Gwm,Gs',
             'kunci_jawaban'   => 'nullable|string|max:10',
             'gambar'          => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
         ]);
@@ -437,6 +437,7 @@ public function dashboard()
             'bobot'           => 'nullable|integer|min:1|max:3600',
             'sembunyikan_teks' => 'nullable|boolean',
             'opsi_jawaban'    => 'nullable|array', 
+            'kode_indikator'  => 'required|string|in:R,I,A,S,E,C,Gf,Gc,Gv,Gq,Gwm,Gs',
             'gambar'          => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', 
         ]);
 
@@ -463,6 +464,7 @@ public function dashboard()
             'teks_pertanyaan' => $request->teks_pertanyaan,
             'teks_awal'       => $request->fase == 4 ? $request->teks_awal : null,
             'fase'            => $request->fase,
+            'kode_indikator'  => $request->kode_indikator,
             'opsi_jawaban'    => empty($opsiJawaban) ? null : $opsiJawaban, 
             'gambar'          => $gambarPath,
             'bobot'           => $request->fase == 4 ? ($request->bobot ?? 12) : null,
