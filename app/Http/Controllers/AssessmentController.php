@@ -82,28 +82,94 @@ class AssessmentController extends Controller
         }
 
         $questions = Question::with('criteria')->where('fase', 3)->get();
-        
+
         // Logika Waktu: 1 soal = 1 menit
         $jumlahSoal = $questions->count();
-        $timeLimitInSeconds = $jumlahSoal * 60; 
+        $timeLimitInSeconds = $jumlahSoal * 60;
 
         return view('assessment.fase3', compact('questions', 'timeLimitInSeconds'));
     }
 
-    public function storefase3(Request $request)
+    public function storeFase3(Request $request)
     {
-        // Validasi opsional, tergantung jika user men-submit form kosong ketika waktu habis
         $request->validate([
-             'jawaban' => 'nullable|array', // Bisa nullable jika waktu habis dan ada soal kosong
+             'jawaban' => 'nullable|array',
         ]);
 
-        // Ambil semua jawaban
+        session(['fase3_answers' => $request->input('jawaban') ?? []]);
+
+        return redirect()->route('assessment.fase4');
+    }
+
+    public function createFase4()
+    {
+        if (!session()->has('fase1_answers') || !session()->has('fase2_answers') || !session()->has('fase3_answers')) {
+            return redirect()->route('assessment.fase1')->with('error', 'Selesaikan Fase 1 sampai 3 terlebih dahulu.');
+        }
+
+        $questions = Question::with('criteria')->where('fase', 4)->get();
+        $answers = session('fase4_answers', []);
+        $currentQuestion = $questions->first(function ($question) use ($answers) {
+            return !array_key_exists($question->id, $answers);
+        });
+        $answeredQuestions = $questions->filter(function ($question) use ($answers) {
+            return array_key_exists($question->id, $answers);
+        })->values();
+
+        return view('assessment.fase4', compact('currentQuestion', 'answeredQuestions', 'answers'));
+    }
+
+    public function storeFase4(Request $request)
+    {
+        $questions = Question::where('fase', 4)->get();
+        $answers = session('fase4_answers', []);
+
+        if ($request->input('action') === 'submit') {
+            $questionIds = $questions->pluck('id')->map(fn ($id) => (string) $id)->all();
+            $answeredIds = array_map('strval', array_keys($answers));
+
+            if (count(array_diff($questionIds, $answeredIds)) > 0) {
+                return back()->withErrors(['jawaban' => 'Jawab seluruh pertanyaan Fase 4 terlebih dahulu.']);
+            }
+
+            $this->finalizeAssessment();
+
+            return redirect()->route('dashboard')->with('success', 'Analisis Penjurusan selesai! Rekomendasi jurusan Anda telah diperbarui.');
+        }
+
+        $request->validate([
+            'jawaban' => 'required|array',
+            'jawaban.*' => 'required|string|max:10',
+        ]);
+
+        $currentQuestion = $questions->first(function ($question) use ($answers) {
+            return !array_key_exists($question->id, $answers);
+        });
+
+        if (!$currentQuestion) {
+            return redirect()->route('assessment.fase4');
+        }
+
+        $submittedAnswers = $request->input('jawaban');
+        $answer = $submittedAnswers[$currentQuestion->id] ?? null;
+        if ($answer === null) {
+            return back()->withErrors(['jawaban' => 'Jawab pertanyaan yang sedang tampil terlebih dahulu.']);
+        }
+
+        $answers[$currentQuestion->id] = $answer;
+        session(['fase4_answers' => $answers]);
+
+        return redirect()->route('assessment.fase4');
+    }
+
+    private function finalizeAssessment()
+    {
         $fase1Answers = session('fase1_answers', []);
         $fase2Answers = session('fase2_answers', []);
-        $fase3Answers = $request->input('jawaban') ?? []; // Menggunakan input 'jawaban' sesuai view form
-        
-        // Gabungkan seluruh fase
-        $answers = $fase1Answers + $fase2Answers + $fase3Answers;
+        $fase3Answers = session('fase3_answers', []);
+        $fase4Answers = session('fase4_answers', []);
+
+        $answers = $fase1Answers + $fase2Answers + $fase3Answers + $fase4Answers;
 
         $riasecScores = [];
         $riasecMaxScores = [];
@@ -132,14 +198,14 @@ class AssessmentController extends Controller
 
         $allCriteria = Criteria::all();
         $studentScoresRaw = [];
-        $maxPossibleScores = []; 
+        $maxPossibleScores = [];
         $scoresPerCriteria = [];
-        $criteriaMap = []; 
+        $criteriaMap = [];
         $chcIndicators = ['gf', 'gc', 'gv', 'gq', 'gwm', 'gs'];
         $chcCorrectAnswers = array_fill_keys($chcIndicators, 0);
         $chcQuestionCounts = array_fill_keys($chcIndicators, 0);
 
-        foreach (Question::whereIn('fase', [2, 3])->get(['kode_indikator']) as $question) {
+        foreach (Question::whereIn('fase', [2, 3, 4])->get(['kode_indikator']) as $question) {
             $indicator = strtolower(preg_replace('/[0-9]+/', '', $question->kode_indikator ?? ''));
             if (array_key_exists($indicator, $chcQuestionCounts)) {
                 $chcQuestionCounts[$indicator]++;
@@ -149,10 +215,10 @@ class AssessmentController extends Controller
         foreach ($allCriteria as $criteria) {
             $kode = strtolower($criteria->kode_kriteria);
             $studentScoresRaw[$kode] = 0;
-            $maxPossibleScores[$kode] = 0; 
-            
-            $criteriaMap[$kode] = $criteria->id; 
-            
+            $maxPossibleScores[$kode] = 0;
+
+            $criteriaMap[$kode] = $criteria->id;
+
             $scoresPerCriteria[$criteria->id] = [
                 'nama_jurusan' => $criteria->nama_kriteria,
                 'kode_jurusan' => $kode,
@@ -161,7 +227,7 @@ class AssessmentController extends Controller
                 'total_skor'   => 0
             ];
         }
-        
+
         $matrixKorelasi = [
             'r'  => ['k01' => 4, 'k02' => 2, 'k03' => 1, 'k04' => 5, 'k05' => 2],
             'i'  => ['k01' => 2, 'k02' => 3, 'k03' => 4, 'k04' => 3, 'k05' => 5],
@@ -178,20 +244,18 @@ class AssessmentController extends Controller
         ];
 
         $questions = Question::with('criteria')->whereIn('id', array_keys($answers))->get();
-        
+
         foreach ($questions as $question) {
             $jawabanSiswa = $answers[$question->id];
             $rawIndikator = strtolower(preg_replace('/[0-9]+/', '', $question->kode_indikator ?? ''));
-            
+
             $poinDasar = 0;
-            $maxPoinSoal = 5; 
+            $maxPoinSoal = 5;
 
             if ($question->fase == 1) {
-                // Konversi eksplisit agar string diabaikan
                 $poinDasar = (int) $jawabanSiswa;
-            } elseif ($question->fase == 2 || $question->fase == 3) { // Tambahkan kondisi Fase 3 jika logikanya sama
+            } elseif (in_array($question->fase, [2, 3, 4], true)) {
                 $kunciJawaban = (int) ($question->kunci_jawaban ?? 1);
-                // Karena jawaban Fase 3 mungkin huruf "A" atau "B", sesuaikan validasinya
                 if ($jawabanSiswa === $kunciJawaban || $jawabanSiswa === $question->kunci_jawaban) {
                     $poinDasar = 5;
                 }
@@ -212,7 +276,6 @@ class AssessmentController extends Controller
                         if ($question->fase == 1) {
                             $scoresPerCriteria[$critId]['skor_minat'] += $tambahSkor;
                         } else {
-                            // Fase 2 dan 3 masuk ke skor bakat/pengetahuan
                             $scoresPerCriteria[$critId]['skor_bakat'] += $tambahSkor;
                         }
                     }
@@ -220,9 +283,6 @@ class AssessmentController extends Controller
             }
         }
 
-        // ==========================================
-        // PROSES NORMALISASI SKOR
-        // ==========================================
         $normalizedScores = [];
         $highestDetailScore = -1;
         $recommendedJurusanId = null;
@@ -230,19 +290,18 @@ class AssessmentController extends Controller
         foreach ($scoresPerCriteria as $id => $data) {
             $kode = $data['kode_jurusan'];
             $rawScore = $studentScoresRaw[$kode] ?? 0;
-            $maxScore = $maxPossibleScores[$kode] > 0 ? $maxPossibleScores[$kode] : 1; 
-            
+            $maxScore = $maxPossibleScores[$kode] > 0 ? $maxPossibleScores[$kode] : 1;
+
             $persentase = round(($rawScore / $maxScore) * 100, 2);
             $normalizedScores[$kode] = $persentase;
             $scoresPerCriteria[$id]['total_skor'] = $persentase;
 
             if ($persentase > $highestDetailScore) {
                 $highestDetailScore = $persentase;
-                $recommendedJurusanId = $id; 
+                $recommendedJurusanId = $id;
             }
         }
 
-        // K-Means
         $recommendedCluster = $this->calculateKMeans($normalizedScores);
         $chcScores = [];
         foreach ($chcIndicators as $indicator) {
@@ -254,23 +313,22 @@ class AssessmentController extends Controller
         AssessmentScore::updateOrCreate(
             ['user_id' => auth()->id()],
             array_merge(
-                $normalizedScores, 
+                $normalizedScores,
                 [
-                    'criteria_id'         => $recommendedJurusanId, 
+                    'criteria_id'         => $recommendedJurusanId,
                     'score'               => $highestDetailScore,
-                    'details'             => json_encode($scoresPerCriteria), 
+                    'details'             => json_encode($scoresPerCriteria),
                     'riasec_scores'       => $riasecScores,
                     'chc_scores'          => $chcScores,
-                    'recommended_cluster' => $recommendedCluster 
+                    'recommended_cluster' => $recommendedCluster
                 ]
             )
         );
 
-        // Bersihkan session
         Session::forget('fase1_answers');
         Session::forget('fase2_answers');
-
-        return redirect()->route('dashboard')->with('success', 'Analisis Penjurusan Fase 3 berhasil! Rekomendasi jurusan Anda telah diperbarui.');
+        Session::forget('fase3_answers');
+        Session::forget('fase4_answers');
     }
 
     private function calculateKMeans($studentScores)

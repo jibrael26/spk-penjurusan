@@ -28,6 +28,12 @@
                 @enderror
             </div>
 
+            <div class="mb-5">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Teks awal Fase 4 (opsional)</label>
+                <textarea name="teks_awal" rows="2" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Contoh: 8-3-5-1-9">{{ old('teks_awal', $question->teks_awal) }}</textarea>
+                <p class="text-xs text-gray-500 mt-1">Teks ini tampil terlebih dahulu lalu diganti dengan pertanyaan setelah durasi berakhir.</p>
+            </div>
+
             <!-- BAGIAN BARU: UPLOAD DAN PREVIEW GAMBAR OPSIONAL -->
             <div class="mb-5 p-5 bg-gray-50 rounded-xl border border-gray-200">
                 <label class="block text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
@@ -71,8 +77,15 @@
                         <option value="1" {{ (old('fase', $question->fase) == 1) ? 'selected' : '' }}>Fase 1 (Angket Likert)</option>
                         <option value="2" {{ (old('fase', $question->fase) == 2) ? 'selected' : '' }}>Fase 2 (Pilihan Ganda A-E)</option>
                         <option value="3" {{ (isset($question) && $question->fase == 3) ? 'selected' : '' }}>Fase 3 (Soal Berwaktu)</option>
+                        <option value="4" {{ (isset($question) && $question->fase == 4) ? 'selected' : '' }}>Fase 4 (Temporary Display)</option>
                     </select>
                 </div>
+            </div>
+
+            <div class="mb-5">
+                <label for="bobot" class="block text-sm font-semibold text-gray-700 mb-2">Durasi tampil per soal (detik)</label>
+                <input type="number" name="bobot" id="bobot" min="1" max="3600" value="{{ old('bobot', $question->bobot ?? 12) }}" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                <p class="text-xs text-gray-500 mt-1">Digunakan khusus untuk Fase 4. Default: 12 detik.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
@@ -96,7 +109,7 @@
             <option value="C" {{ $kodeInd === 'c' ? 'selected' : '' }}>Conventional (C)</option>
         </optgroup>
         
-        <optgroup label="Fase 2 & 3: Bakat Dasar & Lanjutan">
+        <optgroup label="Fase 2–4: Bakat">
             <option value="Gf" {{ $kodeInd === 'gf' ? 'selected' : '' }}>Fluid Reasoning (Gf)</option>
             <option value="Gc" {{ $kodeInd === 'gc' ? 'selected' : '' }}>Comprehension-Knowledge (Gc)</option>
             <option value="Gv" {{ $kodeInd === 'gv' ? 'selected' : '' }}>Visual Processing (Gv)</option>

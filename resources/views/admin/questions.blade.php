@@ -10,11 +10,17 @@
             <!-- Form Manual -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <h3 class="text-lg font-bold text-gray-900 mb-4">Tambah Soal Manual</h3>
-                <form action="{{ route('admin.questions.store') }}" method="POST">
+                <form action="{{ route('admin.questions.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pertanyaan</label>
                         <textarea name="teks_pertanyaan" rows="3" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" required placeholder="Tuliskan pertanyaan..."></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Teks awal Fase 4 (opsional)</label>
+                        <textarea name="teks_awal" rows="2" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Contoh: 8-3-5-1-9"></textarea>
+                        <p class="text-xs text-gray-500 mt-1">Teks ini tampil terlebih dahulu lalu diganti dengan pertanyaan setelah durasi berakhir.</p>
                     </div>
 
                     <div class="mb-4">
@@ -34,6 +40,8 @@
                         <select name="fase" id="fase_selector" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" required>
                             <option value="1">Fase 1 (Angket Likert - Minat)</option>
                             <option value="2">Fase 2 (Pilihan Ganda A-D - Bakat)</option>
+                            <option value="3">Fase 3 (Bakat Lanjutan - Berwaktu)</option>
+                            <option value="4">Fase 4 (Temporary Display)</option>
                         </select>
                     </div>
 
@@ -58,7 +66,7 @@
             <option value="C" {{ $kodeInd === 'c' ? 'selected' : '' }}>Conventional (C)</option>
         </optgroup>
         
-        <optgroup label="Fase 2 & 3: Bakat Dasar & Lanjutan">
+        <optgroup label="Fase 2–4: Bakat">
             <option value="Gf" {{ $kodeInd === 'gf' ? 'selected' : '' }}>Fluid Reasoning (Gf)</option>
             <option value="Gc" {{ $kodeInd === 'gc' ? 'selected' : '' }}>Comprehension-Knowledge (Gc)</option>
             <option value="Gv" {{ $kodeInd === 'gv' ? 'selected' : '' }}>Visual Processing (Gv)</option>
@@ -82,16 +90,11 @@
                         <p class="text-xs text-gray-500 mt-1">*Pilih kunci jawaban khusus untuk soal Fase 2.</p>
                     </div>
 
-                            <div class="mb-4">
-                <label for="fase" class="block text-sm font-medium text-gray-700">Fase Pertanyaan</label>
-                <select name="fase" id="fase" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
-                    <option value="" disabled selected>Pilih Fase...</option>
-                    <option value="1" {{ (old('fase') == '1' || (isset($question) && $question->fase == 1)) ? 'selected' : '' }}>Fase 1 (Minat)</option>
-                    <option value="2" {{ (old('fase') == '2' || (isset($question) && $question->fase == 2)) ? 'selected' : '' }}>Fase 2 (Bakat Dasar)</option>
-                    <!-- Tambahan Opsi Fase 3 -->
-                    <option value="3" {{ (old('fase') == '3' || (isset($question) && $question->fase == 3)) ? 'selected' : '' }}>Fase 3 (Bakat Lanjutan / Berwaktu)</option>
-                </select>
-            </div>
+                    <div class="mb-4">
+                        <label for="bobot" class="block text-sm font-medium text-gray-700">Durasi tampil per soal (detik)</label>
+                        <input type="number" name="bobot" id="bobot" min="1" max="3600" value="{{ old('bobot', 12) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Digunakan khusus untuk Fase 4. Default: 12 detik.</p>
+                    </div>
 
                     <div class="mb-4 p-4 border border-dashed border-gray-300 rounded-lg bg-gray-50">
         <label class="block text-sm font-medium text-gray-700 mb-1">Upload Gambar Pendukung (Opsional)</label>
@@ -138,6 +141,7 @@
                                 <option value="1" @selected(request('fase') === '1')>Fase 1 - Minat</option>
                                 <option value="2" @selected(request('fase') === '2')>Fase 2 - Bakat Dasar</option>
                                 <option value="3" @selected(request('fase') === '3')>Fase 3 - Bakat Lanjutan</option>
+                                <option value="4" @selected(request('fase') === '4')>Fase 4 - Temporary Display</option>
                             </select>
                         </div>
                         <div>
@@ -200,6 +204,8 @@
                                                 <span class="bg-amber-50 text-amber-700 py-1 px-2.5 rounded-full text-xs font-medium">Fase 2</span>
                                             @elseif($q->fase == 3)
                                                 <span class="px-2 py-1 text-xs font-bold bg-blue-100 text-blue-700 rounded-full">Fase 3</span>
+                                            @elseif($q->fase == 4)
+                                                <span class="px-2 py-1 text-xs font-bold bg-rose-100 text-rose-700 rounded-full">Fase 4</span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 text-center">

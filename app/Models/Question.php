@@ -10,11 +10,13 @@ class Question extends Model
     protected $fillable = [
         'criteria_id',
         'teks_pertanyaan',
+        'teks_awal',
         'tipe_opsi',
         'gambar',
         'fase',
         'opsi_jawaban',
         'bobot',
+        'sembunyikan_teks',
         'kode_indikator', // BARU
         'kunci_jawaban'
     ];
@@ -22,6 +24,7 @@ class Question extends Model
     // Otomatis convert JSON dari DB menjadi Array PHP
     protected $casts = [
         'opsi_jawaban' => 'array', 
+        'sembunyikan_teks' => 'boolean',
     ];
 
     public function criteria(): BelongsTo

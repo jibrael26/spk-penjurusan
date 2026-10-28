@@ -286,7 +286,7 @@ public function dashboard()
                         ->orWhere('kode_indikator', 'like', '%' . $search . '%');
                 });
             })
-            ->when($request->filled('fase') && in_array($request->input('fase'), ['1', '2', '3'], true), function ($query) use ($request) {
+            ->when($request->filled('fase') && in_array($request->input('fase'), ['1', '2', '3', '4'], true), function ($query) use ($request) {
                 $query->where('fase', $request->input('fase'));
             })
             ->when($request->filled('criteria_id') && is_numeric($request->input('criteria_id')), function ($query) use ($request) {
@@ -304,8 +304,11 @@ public function dashboard()
     {
         $request->validate([
             'teks_pertanyaan' => 'required|string',
+            'teks_awal'       => 'nullable|string|max:1000',
             'criteria_id'     => 'required|exists:criteria,id',
-            'fase'            => 'required|in:1,2,3',
+            'fase'            => 'required|in:1,2,3,4',
+            'bobot'           => 'nullable|integer|min:1|max:3600',
+            'sembunyikan_teks' => 'nullable|boolean',
             'kode_indikator'  => 'nullable|string|max:10',
             'kunci_jawaban'   => 'nullable|string|max:10',
             'gambar'          => 'nullable|image|mimes:jpeg,png,jpg,gif|max:3048',
@@ -321,12 +324,15 @@ public function dashboard()
         Question::create([
             'criteria_id'     => $request->criteria_id,
             'teks_pertanyaan' => $request->teks_pertanyaan,
+            'teks_awal'       => $request->fase == 4 ? $request->teks_awal : null,
             'gambar'          => $gambarPath,
             'fase'            => $request->fase,
             'tipe_opsi'       => 'text',
             'opsi_jawaban'    => $opsi_jawaban,
             'kode_indikator'  => $request->kode_indikator,
             'kunci_jawaban'   => $request->kunci_jawaban,
+            'bobot'           => $request->fase == 4 ? ($request->bobot ?? 12) : null,
+            'sembunyikan_teks' => $request->fase == 4 && $request->boolean('sembunyikan_teks'),
         ]);
 
         return redirect()->back()->with('success', 'Soal berhasil ditambahkan!');
@@ -425,8 +431,11 @@ public function dashboard()
     {
         $request->validate([
             'teks_pertanyaan' => 'required|string',
+            'teks_awal'       => 'nullable|string|max:1000',
             'criteria_id'     => 'required|exists:criteria,id',
-            'fase'            => 'required|in:1,2,3',
+            'fase'            => 'required|in:1,2,3,4',
+            'bobot'           => 'nullable|integer|min:1|max:3600',
+            'sembunyikan_teks' => 'nullable|boolean',
             'opsi_jawaban'    => 'nullable|array', 
             'gambar'          => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', 
         ]);
@@ -452,9 +461,12 @@ public function dashboard()
         $question->update([
             'criteria_id'     => $request->criteria_id,
             'teks_pertanyaan' => $request->teks_pertanyaan,
+            'teks_awal'       => $request->fase == 4 ? $request->teks_awal : null,
             'fase'            => $request->fase,
             'opsi_jawaban'    => empty($opsiJawaban) ? null : $opsiJawaban, 
             'gambar'          => $gambarPath,
+            'bobot'           => $request->fase == 4 ? ($request->bobot ?? 12) : null,
+            'sembunyikan_teks' => $request->fase == 4 && $request->boolean('sembunyikan_teks'),
         ]);
 
         return redirect()->route('admin.pertanyaan')->with('success', 'Pertanyaan beserta opsi jawaban berhasil diperbarui!');
