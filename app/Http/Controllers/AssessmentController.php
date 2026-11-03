@@ -311,6 +311,7 @@ class AssessmentController extends Controller
                     ]),
                     'riasec_scores'       => $riasecScores,
                     'chc_scores'          => $chcScores,
+                    'answers'             => $answers,
                     'recommended_cluster' => $recommendedCluster
                 ]
             )

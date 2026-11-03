@@ -24,11 +24,11 @@ class AssessmentExport implements FromCollection, WithHeadings, WithMapping
             'ID',
             'Nama Siswa',
             'Email',
-            'Skor C1',
-            'Skor C2',
-            'Skor C3',
+            // 'Skor C1',
+            // 'Skor C2',
+            // 'Skor C3',
             'Rekomendasi Jurusan',
-            'Tanggal Asesmen'
+            // 'Tanggal Asesmen'
         ];
     }
 
@@ -38,11 +38,11 @@ class AssessmentExport implements FromCollection, WithHeadings, WithMapping
             $assessment->id,
             $assessment->user->name ?? 'N/A',
             $assessment->user->email ?? 'N/A',
-            $assessment->score_c1 ?? 0,
-            $assessment->score_c2 ?? 0,
-            $assessment->score_c3 ?? 0,
+            // $assessment->score_c1 ?? 0,
+            // $assessment->score_c2 ?? 0,
+            // $assessment->score_c3 ?? 0,
             $assessment->recommended_cluster ?? $assessment->recommended_major ?? 'Belum Assessment',
-            $assessment->created_at ? $assessment->created_at->format('d-m-Y H:i') : 'N/A',
+            // $assessment->created_at ? $assessment->created_at->format('d-m-Y H:i') : 'N/A',
         ];
     }
 }

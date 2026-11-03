@@ -78,6 +78,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Fitur Export Data Penjurusan
     Route::get('/export-assessment', [AdminController::class, 'exportAssessment'])->name('export.assessment');
+    Route::get('/export-assessment-answers', [AdminController::class, 'exportAssessmentAnswers'])->name('export.assessment.answers');
+    Route::get('/users/{id}/export-assessment-answers', [AdminController::class, 'exportAssessmentAnswers'])->name('users.export-assessment-answers');
     Route::get('/export-kmeans-clustering', [AdminController::class, 'exportKMeansClustering'])->name('export.kmeans');
 
 });

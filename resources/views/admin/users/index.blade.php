@@ -92,6 +92,13 @@
                     
                     <!-- Right Actions: Export Button + Search Input -->
                     <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                        <a href="{{ route('admin.export.assessment.answers') }}"
+                           class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors">
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            <span>Export Jawaban</span>
+                        </a>
                         <!-- Tombol Export Excel -->
                         <a href="{{ route('admin.export.assessment') }}" 
                            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-emerald-600/20 transition-all duration-200">
@@ -175,7 +182,7 @@
                                         <div class="flex items-center justify-center gap-2">
                                             <!-- Icon 1: Lihat Hasil Assessment -->
                                             <button type="button" 
-                                                    @click="openDetailModal({{ json_encode($user) }}, '{{ addslashes($major ?? 'Belum Assessment') }}')"
+                                                    @click="openDetailModal({{ json_encode($user) }}, '{{ addslashes($major ?? 'Belum Assessment') }}', '{{ route('admin.users.export-assessment-answers', $user->id) }}')"
                                                     title="Lihat Hasil Assessment"
                                                     class="p-2 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition-all transform hover:scale-110">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,6 +190,14 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                                 </svg>
                                             </button>
+
+                                            <a href="{{ route('admin.users.export-assessment-answers', $user->id) }}"
+                                               title="Export Jawaban Assessment"
+                                               class="p-2 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg transition-all transform hover:scale-110">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                                </svg>
+                                            </a>
 
                                             <!-- Icon 2: Edit Data -->
                                             <button type="button" 
@@ -294,6 +309,28 @@
                                 <span class="font-bold text-emerald-700 text-base" x-text="activeUserMajor"></span>
                             </div>
                         </div>
+
+                        <div x-show="answerRows.length" class="pt-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Jawaban Assessment</span>
+                                <a :href="activeAnswersExportUrl" title="Export jawaban siswa" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800">Export Excel</a>
+                            </div>
+                            <div class="max-h-72 overflow-y-auto space-y-2 pr-1">
+                                <template x-for="row in answerRows" :key="row.id">
+                                    <div class="rounded-lg border border-gray-100 bg-white p-3 text-sm">
+                                        <div class="flex items-start justify-between gap-3">
+                                            <p class="font-medium text-gray-700" x-text="'F' + row.fase + ' - ' + (row.indikator || 'Pertanyaan')"></p>
+                                            <span class="shrink-0 text-xs font-semibold" :class="row.status === 'Benar' ? 'text-emerald-600' : (row.status === 'Salah' ? 'text-rose-600' : 'text-gray-400')" x-text="row.status"></span>
+                                        </div>
+                                        <p class="mt-1 text-xs text-gray-500" x-text="row.question"></p>
+                                        <p class="mt-2 text-xs text-gray-700"><span class="font-semibold">Jawaban:</span> <span x-text="row.answerLabel"></span></p>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                        <div x-show="showDetail && !answerRows.length" class="rounded-lg border border-dashed border-gray-200 px-3 py-4 text-center text-xs text-gray-400">
+                            Jawaban assessment belum tersimpan untuk siswa ini.
+                        </div>
                     </div>
                 </div>
 
@@ -399,6 +436,8 @@
     <!-- Script Alpine.js Manager & Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        const questionCatalog = @json($questionCatalog ?? []);
+
         function studentTableManager() {
             return {
                 searchQuery: '',
@@ -406,6 +445,8 @@
                 showEdit: false,
                 activeUser: {},
                 activeUserMajor: '',
+                activeAnswersExportUrl: '',
+                answerRows: [],
                 editActionUrl: '',
                 editForm: {
                     id: '',
@@ -415,10 +456,43 @@
                     password: ''
                 },
 
-                openDetailModal(user, major) {
+                openDetailModal(user, major, exportUrl) {
                     this.activeUser = user;
                     this.activeUserMajor = major;
+                    this.activeAnswersExportUrl = exportUrl;
+                    const score = user.assessment_score || user.assessmentScore || {};
+                    const answers = score.answers || {};
+                    this.answerRows = Object.entries(answers).map(([questionId, answer]) => {
+                        const question = questionCatalog.find((item) => String(item.id) === String(questionId));
+                        const answerLabel = this.answerLabel(question, answer);
+                        return {
+                            id: questionId,
+                            fase: question?.fase || '-',
+                            indikator: question?.kode_indikator || '',
+                            question: question?.teks_pertanyaan || 'Pertanyaan tidak ditemukan',
+                            answerLabel,
+                            status: question && question.fase > 1
+                                ? (String(answer) === String(question.kunci_jawaban) ? 'Benar' : 'Salah')
+                                : '-'
+                        };
+                    });
                     this.showDetail = true;
+                },
+
+                answerLabel(question, answer) {
+                    if (!question) return String(answer);
+                    if (Number(question.fase) === 1) {
+                        return ({
+                            1: 'Sangat Tidak Setuju',
+                            2: 'Tidak Setuju',
+                            3: 'Netral',
+                            4: 'Setuju',
+                            5: 'Sangat Setuju'
+                        })[Number(answer)] || String(answer);
+                    }
+                    return question.opsi_jawaban?.[String(answer)]
+                        || question.opsi_jawaban?.[Number(answer)]
+                        || String(answer);
                 },
 
                 openEditModal(siswa, major) {

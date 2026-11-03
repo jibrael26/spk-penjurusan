@@ -21,12 +21,14 @@ class AssessmentScore extends Model
         'score',               // Menyimpan skor total/akhir (berdasarkan metode bobot)
         'details',              // Menyimpan riwayat rincian perhitungan minat & bakat dalam format JSON
         'riasec_scores',       // Menyimpan persentase skor enam dimensi RIASEC
-        'chc_scores'           // Menyimpan persentase skor indikator bakat dasar
+        'chc_scores',          // Menyimpan persentase skor indikator bakat dasar
+        'answers'              // Menyimpan jawaban mentah assessment per pertanyaan
     ];
 
     protected $casts = [
         'riasec_scores' => 'array',
         'chc_scores' => 'array',
+        'answers' => 'array',
     ];
 
     public function user()

@@ -34,7 +34,7 @@ class KMeansClusteringExport implements FromCollection, WithHeadings, WithMappin
             'Skor K03',
             'Skor K04',
             'Skor K05',
-            'Tanggal Assessment',
+            // 'Tanggal Assessment',
         ];
     }
 
@@ -50,7 +50,7 @@ class KMeansClusteringExport implements FromCollection, WithHeadings, WithMappin
             $assessment->k03 ?? 0,
             $assessment->k04 ?? 0,
             $assessment->k05 ?? 0,
-            $assessment->created_at?->format('d-m-Y H:i') ?? 'N/A',
+            // $assessment->created_at?->format('d-m-Y H:i') ?? 'N/A',
         ];
     }
 }

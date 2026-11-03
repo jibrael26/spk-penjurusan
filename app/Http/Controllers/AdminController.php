@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB; 
 use Illuminate\Support\Facades\Storage;
 use App\Exports\AssessmentExport;
+use App\Exports\AssessmentAnswersExport;
 use App\Exports\KMeansClusteringExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\User; 
@@ -85,6 +86,10 @@ public function dashboard()
             ->latest()
             ->paginate(10); 
 
+        $questionCatalog = Question::orderBy('fase')->orderBy('id')->get([
+            'id', 'fase', 'kode_indikator', 'teks_pertanyaan', 'opsi_jawaban', 'kunci_jawaban'
+        ]);
+
         // ==========================================
         // 2. DATA GRAFIK: STATUS ASSESSMENT (MURNI SISWA)
         // ==========================================
@@ -151,6 +156,7 @@ public function dashboard()
             'chartData', 
             'jurusanTerbanyak', 
             'hasilCluster'
+            , 'questionCatalog'
         ));
     }
 
@@ -160,6 +166,19 @@ public function dashboard()
             new KMeansClusteringExport(),
             'hasil-clustering-kmeans-' . now()->format('Y-m-d-His') . '.xlsx'
         );
+    }
+
+    public function exportAssessmentAnswers(?int $userId = null)
+    {
+        if ($userId !== null) {
+            User::where('is_admin', false)->findOrFail($userId);
+        }
+
+        $filename = $userId
+            ? 'jawaban-assessment-siswa-' . $userId . '-' . now()->format('Y-m-d-His') . '.xlsx'
+            : 'jawaban-assessment-seluruh-siswa-' . now()->format('Y-m-d-His') . '.xlsx';
+
+        return Excel::download(new AssessmentAnswersExport($userId), $filename);
     }
 
     // ==========================================
