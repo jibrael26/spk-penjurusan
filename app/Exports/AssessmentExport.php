@@ -10,6 +10,8 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class AssessmentExport implements FromCollection, WithHeadings, WithMapping
 {
+    private int $rowNumber = 0;
+
     /**
      * Mengambil data assessment beserta relasi user
      */
@@ -21,28 +23,47 @@ class AssessmentExport implements FromCollection, WithHeadings, WithMapping
     public function headings(): array
     {
         return [
-            'ID',
+            'NO',
             'Nama Siswa',
             'Email',
-            // 'Skor C1',
-            // 'Skor C2',
-            // 'Skor C3',
-            'Rekomendasi Jurusan',
-            // 'Tanggal Asesmen'
+            'R',
+            'I',
+            'A',
+            'S',
+            'E',
+            'C',
+            'GF',
+            'GC',
+            'GV',
+            'GQ',
+            'GWM',
+            'GS',
+            'Jurusan',
         ];
     }
 
     public function map($assessment): array
     {
+        $riasecScores = $assessment->riasec_scores ?? [];
+        $chcScores = $assessment->chc_scores ?? [];
+
         return [
-            $assessment->id,
+            ++$this->rowNumber,
             $assessment->user->name ?? 'N/A',
             $assessment->user->email ?? 'N/A',
-            // $assessment->score_c1 ?? 0,
-            // $assessment->score_c2 ?? 0,
-            // $assessment->score_c3 ?? 0,
+            (int) round($riasecScores['r'] ?? 0),
+            (int) round($riasecScores['i'] ?? 0),
+            (int) round($riasecScores['a'] ?? 0),
+            (int) round($riasecScores['s'] ?? 0),
+            (int) round($riasecScores['e'] ?? 0),
+            (int) round($riasecScores['c'] ?? 0),
+            (int) round($chcScores['gf'] ?? 0),
+            (int) round($chcScores['gc'] ?? 0),
+            (int) round($chcScores['gv'] ?? 0),
+            (int) round($chcScores['gq'] ?? 0),
+            (int) round($chcScores['gwm'] ?? 0),
+            (int) round($chcScores['gs'] ?? 0),
             $assessment->recommended_cluster ?? $assessment->recommended_major ?? 'Belum Assessment',
-            // $assessment->created_at ? $assessment->created_at->format('d-m-Y H:i') : 'N/A',
         ];
     }
 }

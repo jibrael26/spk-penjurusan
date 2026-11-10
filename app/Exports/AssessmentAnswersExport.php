@@ -17,7 +17,9 @@ class AssessmentAnswersExport implements FromCollection, WithHeadings
     public function collection(): Collection
     {
         $scores = AssessmentScore::with('user')
+            ->whereHas('user', fn ($query) => $query->where('is_admin', false))
             ->when($this->userId, fn ($query) => $query->where('user_id', $this->userId))
+            ->orderBy('user_id')
             ->get();
 
         $questionIds = $scores
@@ -28,10 +30,12 @@ class AssessmentAnswersExport implements FromCollection, WithHeadings
         $questions = Question::whereIn('id', $questionIds)->get()->keyBy(fn ($question) => (string) $question->id);
 
         return $scores->flatMap(function ($score) use ($questions) {
-            return collect($score->answers ?? [])->map(function ($answer, $questionId) use ($score, $questions) {
+            return collect($score->answers ?? [])->sortKeysUsing(function ($first, $second) {
+                return (int) $first <=> (int) $second;
+            })->map(function ($answer, $questionId) use ($score, $questions) {
                 $question = $questions->get((string) $questionId);
                 $answerLabel = $this->answerLabel($question, $answer);
-                $isCorrect = $question && $question->fase > 1
+                $isCorrect = $question && (int) $question->fase > 1
                     ? ((string) $answer === (string) $question->kunci_jawaban ? 'Benar' : 'Salah')
                     : '-';
 
@@ -62,7 +66,7 @@ class AssessmentAnswersExport implements FromCollection, WithHeadings
             'Pertanyaan',
             'Nilai Jawaban',
             'Jawaban',
-            'Status',
+            'Status', 
             // 'Tanggal Assessment',
         ];
     }
@@ -73,7 +77,7 @@ class AssessmentAnswersExport implements FromCollection, WithHeadings
             return '-';
         }
 
-        if ($question->fase === 1) {
+        if ((int) $question->fase === 1) {
             return [
                 1 => 'Sangat Tidak Setuju',
                 2 => 'Tidak Setuju',

@@ -78,13 +78,25 @@ public function dashboard()
         return view('admin.dashboard', compact('labels', 'totals', 'chartLabels', 'chartData'));
     }
 
-    public function dataSiswa() 
+    public function dataSiswa(Request $request)
     {
+        $search = trim((string) $request->input('search', ''));
+
         // 1. Data paginasi khusus siswa (admin otomatis tidak tampil di tabel siswa)
         $siswa = User::where('is_admin', false)
             ->with('assessmentScore')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhereHas('assessmentScore', function ($query) use ($search) {
+                            $query->where('recommended_cluster', 'like', "%{$search}%");
+                        });
+                });
+            })
             ->latest()
-            ->paginate(10); 
+            ->paginate(10)
+            ->withQueryString();
 
         $questionCatalog = Question::orderBy('fase')->orderBy('id')->get([
             'id', 'fase', 'kode_indikator', 'teks_pertanyaan', 'opsi_jawaban', 'kunci_jawaban'
@@ -157,6 +169,7 @@ public function dashboard()
             'jurusanTerbanyak', 
             'hasilCluster'
             , 'questionCatalog'
+            , 'search'
         ));
     }
 

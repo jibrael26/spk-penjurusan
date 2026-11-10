@@ -109,13 +109,13 @@
                         </a>
 
                         <!-- Search Input -->
-                        <div class="relative w-full sm:w-64">
+                        <form method="GET" action="{{ route('admin.siswa') }}" class="relative w-full sm:w-64">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                             </div>
-                            <input type="text" x-model="searchQuery" placeholder="Cari nama atau jurusan..." 
+                            <input type="search" name="search" value="{{ $search ?? '' }}" placeholder="Cari nama, email, atau jurusan..."
                                    class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none">
-                        </div>
+                        </form>
                     </div>
                 </div>
 
@@ -238,7 +238,7 @@
                 <!-- Pagination Footer -->
                 @if(method_exists($usersList, 'hasPages') && $usersList->hasPages())
                     <div class="p-4 border-t border-gray-100 bg-gray-50/50">
-                        {{ $usersList->links() }}
+                        {{ $usersList->withQueryString()->links() }}
                     </div>
                 @endif
             </div>
