@@ -61,21 +61,7 @@
                 @enderror
             </div>
 
-            <div class="grid grid-cols-1 gap-5 rounded-xl border border-slate-200 bg-slate-50 p-5 md:grid-cols-2">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Kelompok Soal (Metadata)</label>
-                    <select name="criteria_id" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" required>
-                        <option value="">Pilih kelompok soal</option>
-                        @isset($criteria)
-                            @foreach($criteria as $crit)
-                                <option value="{{ $crit->id }}" {{ (old('criteria_id', $question->criteria_id) == $crit->id) ? 'selected' : '' }}>
-                                    {{ $crit->kode_kriteria }} - {{ $crit->nama_kriteria }}
-                                </option>
-                            @endforeach
-                        @endisset
-                    </select>
-                </div>
-
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-5">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Fase Tes</label>
                     <select name="fase" id="fase_selector" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" required>
@@ -123,7 +109,7 @@
             <option value="Gs" {{ $kodeInd === 'gs' ? 'selected' : '' }}>Processing Speed (Gs)</option>
         </optgroup>
     </select>
-    <p class="text-xs text-gray-500 mt-1">RIASEC untuk Fase 1; CHC untuk Fase 2, 3, dan 4. Parameter ini digunakan dalam rekomendasi jurusan.</p>
+    <p class="text-xs text-gray-500 mt-1">RIASEC untuk Fase 1; CHC untuk Fase 2, 3, dan 4. Parameter ini digunakan dalam rekomendasi Program Keahlian.</p>
 </div>
 
                 <div>

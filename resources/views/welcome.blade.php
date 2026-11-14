@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Sistem Rekomendasi Jurusan SMK Negeri 1 Tatapaan untuk membantu siswa mengenali minat dan bakatnya.">
-    <title>SPK Penjurusan | SMK Negeri 1 Tatapaan</title>
+    <meta name="description" content="Sistem Rekomendasi Program Keahlian SMK Negeri 1 Tatapaan untuk membantu siswa mengenali minat dan bakatnya.">
+    <title>SPK Program Keahlian | SMK Negeri 1 Tatapaan</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet">
@@ -14,11 +14,11 @@
 <body class="bg-slate-50 font-[Figtree] text-slate-900 antialiased selection:bg-indigo-600 selection:text-white">
     <nav class="fixed inset-x-0 top-0 z-50 border-b border-slate-200/70 bg-white/90 backdrop-blur-xl">
         <div class="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-            <a href="{{ route('landing') }}" class="flex items-center gap-3" aria-label="Beranda SPK Penjurusan">
+            <a href="{{ route('landing') }}" class="flex items-center gap-3" aria-label="Beranda SPK Program Keahlian">
                 <img src="{{ asset('logo-smk.png') }}" alt="Logo SMK Negeri 1 Tatapaan" class="h-11 w-11 object-contain">
                 <span class="leading-tight">
                     <span class="block text-sm font-extrabold tracking-tight text-slate-900 sm:text-base">SMK Negeri 1 Tatapaan</span>
-                    <span class="mt-0.5 block text-[10px] font-bold uppercase tracking-[0.18em] text-indigo-500">Sistem Penjurusan</span>
+                    <span class="mt-0.5 block text-[10px] font-bold uppercase tracking-[0.18em] text-indigo-500">Sistem Program Keahlian</span>
                 </span>
             </a>
 
@@ -59,14 +59,14 @@
                 <div class="max-w-3xl pt-12 sm:pt-20 lg:pt-24">
                     <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-2 text-xs font-bold text-white backdrop-blur-md sm:text-sm">
                         <span class="h-2 w-2 rounded-full bg-emerald-400 ring-4 ring-emerald-400/20"></span>
-                        Platform resmi penjurusan siswa
+                        Platform resmi rekomendasi Program Keahlian siswa
                     </div>
                     <h1 class="max-w-3xl text-4xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-6xl lg:text-7xl">
                         Kenali potensimu,
                         <span class="text-cyan-300">tentukan langkahmu.</span>
                     </h1>
                     <p class="mt-6 max-w-2xl text-base leading-8 text-slate-200 sm:text-lg">
-                        SPK Penjurusan membantu siswa SMK Negeri 1 Tatapaan menemukan bidang yang paling sesuai melalui asesmen minat, bakat, dan kemampuan secara terarah.
+                        SPK Program Keahlian membantu siswa SMK Negeri 1 Tatapaan menemukan bidang keahlian yang paling sesuai melalui asesmen minat, bakat, dan kemampuan secara terarah.
                     </p>
                     <div class="mt-8 flex flex-col gap-3 sm:flex-row">
                         @auth
@@ -96,7 +96,7 @@
                         <p class="mt-1 text-sm text-slate-300">Pengukuran bakat dasar</p>
                     </div>
                     <div class="py-3 sm:pl-8">
-                        <p class="text-2xl font-extrabold text-cyan-300">5 Jurusan</p>
+                        <p class="text-2xl font-extrabold text-cyan-300">5 Program Keahlian</p>
                         <p class="mt-1 text-sm text-slate-300">Rekomendasi yang terarah</p>
                     </div>
                 </div>
@@ -107,9 +107,9 @@
             <div class="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:px-8">
                 <div>
                     <p class="text-sm font-extrabold uppercase tracking-[0.18em] text-indigo-600">Mengapa sistem ini?</p>
-                    <h2 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Pilihan jurusan dimulai dari pemahaman diri.</h2>
+                    <h2 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Pilihan Program Keahlian dimulai dari pemahaman diri.</h2>
                 </div>
-                <p class="max-w-3xl text-base leading-8 text-slate-600">Setiap siswa memiliki minat dan kekuatan yang berbeda. Sistem ini menyajikan proses penjurusan yang lebih terstruktur agar keputusan akademik tidak hanya berdasarkan tren, tetapi juga berdasarkan profil dan potensi diri.</p>
+                <p class="max-w-3xl text-base leading-8 text-slate-600">Setiap siswa memiliki minat dan kekuatan yang berbeda. Sistem ini menyajikan rekomendasi Program Keahlian yang lebih terstruktur berdasarkan profil dan potensi diri.</p>
             </div>
         </section>
 
@@ -120,7 +120,7 @@
                     @foreach ([
                         ['01', 'Buat akun siswa', 'Daftarkan akun dan lengkapi data diri untuk memulai proses asesmen.'],
                         ['02', 'Kerjakan asesmen', 'Jawab pertanyaan minat dan bakat sesuai kondisi serta dirimu yang sebenarnya.'],
-                        ['03', 'Lihat rekomendasi', 'Pelajari hasil analisis dan rekomendasi bidang jurusan yang paling sesuai.'],
+                        ['03', 'Lihat rekomendasi', 'Pelajari hasil analisis dan rekomendasi Program Keahlian yang paling sesuai.'],
                     ] as [$number, $title, $description])
                         <div class="relative rounded-2xl border border-slate-200 bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-100/50">
                             <span class="text-4xl font-extrabold text-indigo-100">{{ $number }}</span>
@@ -163,7 +163,7 @@
 
     <footer class="border-t border-slate-200 bg-white">
         <div class="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-8 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-            <div class="flex items-center gap-3"><img src="{{ asset('logo-smk.png') }}" alt="Logo SMK Negeri 1 Tatapaan" class="h-9 w-9 object-contain"><div><p class="text-sm font-extrabold text-slate-900">SMK Negeri 1 Tatapaan</p><p class="text-xs font-semibold text-indigo-500">Sistem Rekomendasi Jurusan</p></div></div>
+            <div class="flex items-center gap-3"><img src="{{ asset('logo-smk.png') }}" alt="Logo SMK Negeri 1 Tatapaan" class="h-9 w-9 object-contain"><div><p class="text-sm font-extrabold text-slate-900">SMK Negeri 1 Tatapaan</p><p class="text-xs font-semibold text-indigo-500">Sistem Rekomendasi Program Keahlian</p></div></div>
             <p class="text-xs font-medium text-slate-500">&copy; {{ date('Y') }} SMK Negeri 1 Tatapaan. Semua hak dilindungi.</p>
         </div>
     </footer>

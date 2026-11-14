@@ -9,8 +9,8 @@
         <div>
             <p class="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">Dashboard admin</p>
             <p class="text-sm font-semibold text-slate-300">Selamat datang kembali, {{ explode(' ', Auth::user()->name)[0] }}</p>
-            <h1 class="mt-1 text-3xl font-black tracking-tight text-white">Pantau rekomendasi jurusan</h1>
-            <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-300">Kelola data siswa, instrumen tes, dan pantau hasil rekomendasi jurusan dari satu ruang kerja yang ringkas.</p>
+            <h1 class="mt-1 text-3xl font-black tracking-tight text-white">Pantau rekomendasi Program Keahlian</h1>
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-300">Kelola data siswa, instrumen tes, dan pantau hasil rekomendasi Program Keahlian dari satu ruang kerja yang ringkas.</p>
         </div>
         
         <!-- Tombol Aksi Cepat -->
@@ -75,8 +75,8 @@
         <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:col-span-2">
             <div class="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                    <h3 class="text-base font-bold text-slate-900">Distribusi Rekomendasi Jurusan</h3>
-                    <p class="mt-1 text-xs text-slate-500">Statistik jurusan yang direkomendasikan kepada siswa.</p>
+                    <h3 class="text-base font-bold text-slate-900">Distribusi Rekomendasi Program Keahlian</h3>
+                    <p class="mt-1 text-xs text-slate-500">Statistik Program Keahlian yang direkomendasikan kepada siswa.</p>
                 </div>
                 <span class="inline-flex w-fit items-center gap-2 rounded-full bg-cyan-50 px-3 py-1.5 text-xs font-semibold text-cyan-700">
                     <span class="h-2 w-2 rounded-full bg-cyan-500"></span>
@@ -95,8 +95,8 @@
             <div class="bg-gradient-to-br from-cyan-600 to-blue-700 rounded-2xl shadow-sm p-6 text-white relative overflow-hidden flex-1">
                 <div class="relative z-10">
                     <p class="text-xs font-bold uppercase tracking-[0.16em] text-cyan-200">Status sistem</p>
-                    <h3 class="mt-2 text-2xl font-bold">Rekomendasi Jurusan Aktif</h3>
-                    <p class="mt-2 text-sm leading-relaxed text-cyan-50">Sistem rekomendasi jurusan berjalan normal dan siap menerima respons siswa.</p>
+                    <h3 class="mt-2 text-2xl font-bold">Rekomendasi Program Keahlian Aktif</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-cyan-50">Sistem rekomendasi Program Keahlian berjalan normal dan siap menerima respons siswa.</p>
                     <div class="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-sm font-semibold text-white">
                         <span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span> Sistem Online
                     </div>
@@ -148,7 +148,7 @@
                     <tr>
                         <th class="px-6 py-4">Nama Siswa</th>
                         <th class="px-6 py-4">Waktu Selesai</th>
-                        <th class="px-6 py-4">Rekomendasi Jurusan</th>
+                        <th class="px-6 py-4">Rekomendasi Program Keahlian</th>
                         <th class="px-6 py-4 text-right">Aksi</th>
                     </tr>
                 </thead>

@@ -26,19 +26,19 @@ class AssessmentExport implements FromCollection, WithHeadings, WithMapping
             'NO',
             'Nama Siswa',
             'Email',
-            'R',
-            'I',
-            'A',
-            'S',
-            'E',
-            'C',
-            'GF',
-            'GC',
-            'GV',
-            'GQ',
-            'GWM',
-            'GS',
-            'Jurusan',
+            'R (1-5)',
+            'I (1-5)',
+            'A (1-5)',
+            'S (1-5)',
+            'E (1-5)',
+            'C (1-5)',
+            'GF (1-5)',
+            'GC (1-5)',
+            'GV (1-5)',
+            'GQ (1-5)',
+            'GWM (1-5)',
+            'GS (1-5)',
+            'Program Keahlian',
         ];
     }
 
@@ -51,19 +51,26 @@ class AssessmentExport implements FromCollection, WithHeadings, WithMapping
             ++$this->rowNumber,
             $assessment->user->name ?? 'N/A',
             $assessment->user->email ?? 'N/A',
-            (int) round($riasecScores['r'] ?? 0),
-            (int) round($riasecScores['i'] ?? 0),
-            (int) round($riasecScores['a'] ?? 0),
-            (int) round($riasecScores['s'] ?? 0),
-            (int) round($riasecScores['e'] ?? 0),
-            (int) round($riasecScores['c'] ?? 0),
-            (int) round($chcScores['gf'] ?? 0),
-            (int) round($chcScores['gc'] ?? 0),
-            (int) round($chcScores['gv'] ?? 0),
-            (int) round($chcScores['gq'] ?? 0),
-            (int) round($chcScores['gwm'] ?? 0),
-            (int) round($chcScores['gs'] ?? 0),
+            $this->toFivePointScale($riasecScores['r'] ?? 0),
+            $this->toFivePointScale($riasecScores['i'] ?? 0),
+            $this->toFivePointScale($riasecScores['a'] ?? 0),
+            $this->toFivePointScale($riasecScores['s'] ?? 0),
+            $this->toFivePointScale($riasecScores['e'] ?? 0),
+            $this->toFivePointScale($riasecScores['c'] ?? 0),
+            $this->toFivePointScale($chcScores['gf'] ?? 0),
+            $this->toFivePointScale($chcScores['gc'] ?? 0),
+            $this->toFivePointScale($chcScores['gv'] ?? 0),
+            $this->toFivePointScale($chcScores['gq'] ?? 0),
+            $this->toFivePointScale($chcScores['gwm'] ?? 0),
+            $this->toFivePointScale($chcScores['gs'] ?? 0),
             $assessment->recommended_cluster ?? $assessment->recommended_major ?? 'Belum Assessment',
         ];
+    }
+
+    private function toFivePointScale(mixed $percentage): int
+    {
+        $percentage = min(100, max(0, (float) $percentage));
+
+        return (int) min(5, max(1, ceil($percentage / 20)));
     }
 }

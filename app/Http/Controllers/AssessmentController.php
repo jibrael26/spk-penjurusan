@@ -297,6 +297,7 @@ class AssessmentController extends Controller
 
         $recommendedJurusanId = $criteriaMap[$recommendedKode] ?? null;
         $recommendedCluster = $this->majorProfiles[$recommendedKode]['name'] ?? null;
+        $clusteringMetrics = $this->buildClusteringMetrics($scoresPerCriteria, $recommendedKode);
 
         AssessmentScore::updateOrCreate(
             ['user_id' => auth()->id()],
@@ -305,10 +306,11 @@ class AssessmentController extends Controller
                 [
                     'criteria_id'         => $recommendedJurusanId,
                     'score'               => $highestDetailScore,
-                    'details'             => json_encode([
+                    'details'             => [
                         'metode' => 'RIASEC 45% + CHC 55%',
                         'profil_jurusan' => $scoresPerCriteria,
-                    ]),
+                        'kinerja_rekomendasi' => $clusteringMetrics,
+                    ],
                     'riasec_scores'       => $riasecScores,
                     'chc_scores'          => $chcScores,
                     'answers'             => $answers,
@@ -377,6 +379,38 @@ class AssessmentController extends Controller
         }
 
         return round($weightedScore / $totalWeight, 2);
+    }
+
+    /**
+     * Metrik transparansi untuk hasil pengelompokan berbasis kedekatan profil.
+     * Nilai skor adalah kemiripan (0-100), sehingga jarak dinyatakan sebagai 100 - skor.
+     */
+    private function buildClusteringMetrics(array $scoresPerCriteria, ?string $recommendedKode): array
+    {
+        $rankedProfiles = collect($scoresPerCriteria)
+            ->sortByDesc('total_skor')
+            ->values()
+            ->map(function (array $profile, int $index) {
+                $profile['peringkat'] = $index + 1;
+                $profile['jarak'] = round(max(0, 100 - (float) $profile['total_skor']), 2);
+
+                return $profile;
+            });
+
+        $winner = $rankedProfiles->first();
+        $runnerUp = $rankedProfiles->get(1);
+        $bestScore = (float) ($winner['total_skor'] ?? 0);
+        $runnerUpScore = (float) ($runnerUp['total_skor'] ?? 0);
+        $margin = round(max(0, $bestScore - $runnerUpScore), 2);
+
+        return [
+            'peringkat' => $rankedProfiles->all(),
+            'kode_rekomendasi' => $recommendedKode,
+            'skor_tertinggi' => $bestScore,
+            'jarak_terdekat' => (float) ($winner['jarak'] ?? 100),
+            'margin_kandidat_kedua' => $margin,
+            'tingkat_keyakinan' => round(min(100, $margin * 5), 2),
+        ];
     }
 
     public function dashboard()

@@ -7,7 +7,7 @@
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
 
             <!-- Flash Message Sukses -->
-            @if(session('success'))
+            @if(false && session('success'))
                 <div class="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-700 shadow-sm">
                     <div class="flex items-center space-x-3">
                         <svg class="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
@@ -30,9 +30,9 @@
                         </h1>
                         <p class="text-sm leading-relaxed text-blue-100 sm:text-base">
                             @if(isset($latestScore) && $latestScore)
-                                Rekomendasi klaster jurusan terbaikmu adalah <strong class="text-white underline">{{ $latestScore->recommended_cluster }}</strong>.
+                                Program Keahlian yang paling sesuai dengan profilmu adalah <strong class="text-white underline">{{ $latestScore->recommended_cluster }}</strong>.
                             @else
-                                Belum ada data asesmen. Mulai tes sekarang untuk mengetahui rekomendasi jurusan SMK yang paling tepat untukmu.
+                                Belum ada data asesmen. Mulai asesmen sekarang untuk mengetahui Program Keahlian SMK yang paling sesuai untukmu.
                             @endif
                         </p>
                     </div>
@@ -124,7 +124,7 @@
                             <h2 class="mb-1 text-lg font-bold text-slate-900">Status asesmen</h2>
                             <p class="mb-5 text-sm leading-relaxed text-slate-500">
                                 @if(isset($latestScore) && $latestScore)
-                                    Hasil analisis K-Means berhasil disimpan.
+                                    Hasil analisis profil berhasil disimpan.
                                 @else
                                     Belum ada asesmen yang dikerjakan.
                                 @endif
@@ -132,7 +132,7 @@
 
                             @if(isset($latestScore) && $latestScore)
                                 <div class="mb-5 rounded-2xl border border-indigo-100 bg-indigo-50 p-4">
-                                    <p class="text-xs font-semibold uppercase tracking-wide text-indigo-500">Rekomendasi jurusan</p>
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-indigo-500">Rekomendasi Program Keahlian</p>
                                     <p class="mt-1 text-base font-extrabold leading-snug text-indigo-900">
                                         {{ $latestScore->recommended_cluster }}
                                     </p>

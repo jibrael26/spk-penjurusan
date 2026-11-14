@@ -28,11 +28,8 @@
 
                     @foreach($fase1Questions as $question)
                     <div class="bg-white p-6 rounded-lg shadow-md mb-6 border-l-4 border-blue-500">
-                        <h3 class="font-semibold text-lg mb-3 text-gray-800">
+                        <h3 class="rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-3 font-semibold text-lg leading-7 text-gray-800">
                             {{ $globalIndex++ }}. 
-                            @if($question->kode_indikator)
-                                <span class="text-sm font-bold text-blue-600">[{{ $question->kode_indikator }}]</span> 
-                            @endif
                             {!! nl2br(e($question->teks_pertanyaan)) !!}
                         </h3>
 
@@ -69,11 +66,8 @@
 
                     @foreach($fase2Questions as $question)
                     <div class="bg-white p-6 rounded-lg shadow-md mb-6 border-l-4 border-indigo-500">
-                        <h3 class="font-semibold text-lg mb-3 text-gray-800">
+                        <h3 class="rounded-xl border border-indigo-100 bg-indigo-50/60 px-4 py-3 font-semibold text-lg leading-7 text-gray-800">
                             {{ $globalIndex++ }}. 
-                            @if($question->kode_indikator)
-                                <span class="text-sm font-bold text-indigo-600">[{{ $question->kode_indikator }}]</span> 
-                            @endif
                             {!! nl2br(e($question->teks_pertanyaan)) !!}
                         </h3>
 
@@ -109,7 +103,7 @@
                 <!-- Tombol Submit -->
                 <div class="flex justify-end mb-8">
                     <button type="submit" class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-semibold shadow-md transition-all">
-                        Simpan Jawaban & Proses Penjurusan
+                        Simpan Jawaban & Lihat Rekomendasi
                     </button>
                 </div>
             </form>

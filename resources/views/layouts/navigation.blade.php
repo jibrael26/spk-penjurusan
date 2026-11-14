@@ -13,7 +13,7 @@
                                 SMK Negeri 1 Tatapaan
                             </span>
                             <span class="block mt-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-indigo-400">
-                                Sistem Penjurusan
+                                Program Keahlian
                             </span>
                         </span>
                     </a>

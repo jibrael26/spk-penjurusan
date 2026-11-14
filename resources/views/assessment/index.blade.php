@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="min-h-screen bg-slate-50 py-8 sm:py-12">
         <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            @if (session('success'))
+            @if (false && session('success'))
                 <div class="mb-6 flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-800 shadow-sm" role="alert">
                     <svg class="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -37,13 +37,13 @@
                                 <span class="h-2 w-2 rounded-full bg-emerald-300"></span>
                                 Asesmen selesai
                             </p>
-                            <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Hasil Asesmen Penjurusan</h1>
+                            <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Hasil Asesmen Program Keahlian</h1>
                             <p class="mt-2 max-w-2xl text-sm leading-relaxed text-blue-100">
-                                Hasil ini dirangkum dari minat RIASEC dan kemampuan bakat dasar Anda sebagai bahan pertimbangan memilih jurusan.
+                                Hasil ini dirangkum dari minat RIASEC dan kemampuan bakat dasar Anda untuk memberikan rekomendasi Program Keahlian yang sesuai.
                             </p>
                         </div>
                         <div class="rounded-2xl bg-white/10 px-5 py-4 text-left ring-1 ring-white/20 sm:min-w-64">
-                            <p class="text-xs font-semibold uppercase tracking-wide text-blue-100">Rekomendasi jurusan</p>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-blue-100">Rekomendasi Program Keahlian</p>
                             <p class="mt-1 text-lg font-bold leading-snug">{{ $latestScore->recommended_cluster }}</p>
                         </div>
                     </div>
@@ -132,6 +132,56 @@
                     </section>
                 @endif
 
+                @php
+                    $performance = is_array($latestScore->details)
+                        ? ($latestScore->details['kinerja_rekomendasi'] ?? null)
+                        : null;
+                    $rankedProfiles = $performance['peringkat'] ?? [];
+                @endphp
+                @if($performance && count($rankedProfiles) > 0)
+                    <section class="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Transparansi rekomendasi</p>
+                                <h2 class="mt-1 text-lg font-bold text-slate-900">Seberapa kuat hasil pengelompokan?</h2>
+                                <p class="mt-1 text-sm text-slate-500">Skor menunjukkan tingkat kesesuaian profil Anda dengan setiap Program Keahlian. Nilai lebih tinggi berarti lebih sesuai.</p>
+                            </div>
+                            <span class="inline-flex w-fit rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-bold text-emerald-700">
+                                Keyakinan {{ $performance['tingkat_keyakinan'] ?? 0 }}%
+                            </span>
+                        </div>
+
+                        <div class="mt-5 grid gap-3 sm:grid-cols-3">
+                            <div class="rounded-2xl bg-slate-50 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Skor tertinggi</p>
+                                <p class="mt-1 text-2xl font-black text-slate-900">{{ $performance['skor_tertinggi'] ?? 0 }}%</p>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Jarak terdekat</p>
+                                <p class="mt-1 text-2xl font-black text-slate-900">{{ $performance['jarak_terdekat'] ?? 0 }}</p>
+                            </div>
+                            <div class="rounded-2xl bg-slate-50 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Selisih kandidat kedua</p>
+                                <p class="mt-1 text-2xl font-black text-slate-900">{{ $performance['margin_kandidat_kedua'] ?? 0 }}%</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 space-y-3">
+                            @foreach($rankedProfiles as $profile)
+                                <div>
+                                    <div class="mb-1 flex justify-between gap-3 text-sm">
+                                        <span class="font-semibold text-slate-700">{{ $profile['kode_jurusan'] }} · {{ $profile['nama_jurusan'] }}</span>
+                                        <span class="font-bold text-blue-700">{{ $profile['total_skor'] }}%</span>
+                                    </div>
+                                    <div class="h-2 overflow-hidden rounded-full bg-slate-100">
+                                        <div class="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-600" style="width: {{ min(100, max(0, $profile['total_skor'])) }}%"></div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </section>
+                @endif
+
                 <div class="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                     <a href="{{ route('assessment.fase1') }}" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700">
                         <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -155,7 +205,7 @@
                     </div>
                     <h1 class="mt-5 text-2xl font-bold text-slate-900">Mulai Kenali Potensi Anda</h1>
                     <p class="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-slate-500">
-                        Ikuti asesmen penjurusan untuk mendapatkan rekomendasi jurusan berdasarkan minat dan bakat Anda.
+                        Ikuti asesmen Program Keahlian untuk mendapatkan rekomendasi berdasarkan minat dan bakat Anda.
                     </p>
                     <div class="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
                         <a href="{{ route('assessment.create') }}" class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700">

@@ -32,5 +32,7 @@
                 {{ $slot }}
             </main>
         </div>
+        <x-flash-toast />
+        <x-confirm-dialog />
     </body>
 </html>

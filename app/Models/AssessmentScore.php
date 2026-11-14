@@ -29,6 +29,7 @@ class AssessmentScore extends Model
         'riasec_scores' => 'array',
         'chc_scores' => 'array',
         'answers' => 'array',
+        'details' => 'array',
     ];
 
     public function user()

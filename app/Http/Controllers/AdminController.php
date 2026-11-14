@@ -159,6 +159,19 @@ public function dashboard()
                 })->values()->all();
             });
 
+        $performanceRecords = $siswaScores
+            ->map(fn ($siswa) => data_get($siswa->assessmentScore->details, 'kinerja_rekomendasi'))
+            ->filter(fn ($performance) => is_array($performance));
+        $clusteringSummary = [
+            'total' => $performanceRecords->count(),
+            'rata_rata_skor' => round((float) $performanceRecords->avg('skor_tertinggi'), 2),
+            'rata_rata_margin' => round((float) $performanceRecords->avg('margin_kandidat_kedua'), 2),
+            'rata_rata_keyakinan' => round((float) $performanceRecords->avg('tingkat_keyakinan'), 2),
+            'keyakinan_rendah' => $performanceRecords->filter(
+                fn ($performance) => (float) ($performance['tingkat_keyakinan'] ?? 0) < 50
+            )->count(),
+        ];
+
         return view('admin.users.index', compact(
             'siswa', 
             'totalSiswa', 
@@ -168,6 +181,7 @@ public function dashboard()
             'chartData', 
             'jurusanTerbanyak', 
             'hasilCluster'
+            , 'clusteringSummary'
             , 'questionCatalog'
             , 'search'
         ));
@@ -199,7 +213,7 @@ public function dashboard()
     // ==========================================
 
     /**
-     * Memperbarui data siswa dan rekomendasi jurusannya.
+     * Memperbarui data dasar siswa tanpa mengubah rekomendasi assessment.
      */
     public function updateUser(Request $request,$id)
     {
@@ -208,14 +222,12 @@ public function dashboard()
     $validated = $request->validate([
         'name'              => 'required|string|max:255',
         'email'             => 'required|email|unique:users,email,' . $siswa->id,
-        'recommended_major' => 'nullable|string|max:255',
         'password'          => 'nullable|min:8', // Jadikan nullable
     ]);
 
     // Update nama, email, dsb
     $siswa->name = $validated['name'];
     $siswa->email = $validated['email'];
-    $siswa->recommended_major = $validated['recommended_cluster'] ?? null; // Pastikan field ini ada di tabel users
 
     // Hanya hash dan update password JIKA input password tidak kosong
     if ($request->filled('password')) {
@@ -310,7 +322,7 @@ public function dashboard()
     // ==========================================
     public function questions(Request $request)
     {
-        $questions = Question::with('criteria')
+        $questions = Question::query()
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->string('search')->toString();
                 $query->where(function ($questionQuery) use ($search) {
@@ -321,15 +333,11 @@ public function dashboard()
             ->when($request->filled('fase') && in_array($request->input('fase'), ['1', '2', '3', '4'], true), function ($query) use ($request) {
                 $query->where('fase', $request->input('fase'));
             })
-            ->when($request->filled('criteria_id') && is_numeric($request->input('criteria_id')), function ($query) use ($request) {
-                $query->where('criteria_id', $request->input('criteria_id'));
-            })
             ->latest()
             ->paginate(10)
             ->withQueryString();
 
-        $criteria = Criteria::orderBy('kode_kriteria')->get();
-        return view('admin.questions', compact('questions', 'criteria')); 
+        return view('admin.questions', compact('questions'));
     }
 
     public function storeQuestion(Request $request)
@@ -337,8 +345,9 @@ public function dashboard()
         $request->validate([
             'teks_pertanyaan' => 'required|string',
             'teks_awal'       => 'nullable|string|max:1000',
-            'criteria_id'     => 'required|exists:criteria,id',
             'fase'            => 'required|in:1,2,3,4',
+            'opsi_jawaban'    => 'nullable|array',
+            'opsi_jawaban.*'  => 'nullable|string|max:1000',
             'bobot'           => 'nullable|integer|min:1|max:3600',
             'sembunyikan_teks' => 'nullable|boolean',
             'kode_indikator'  => 'required|string|in:R,I,A,S,E,C,Gf,Gc,Gv,Gq,Gwm,Gs',
@@ -351,16 +360,20 @@ public function dashboard()
             $gambarPath =$request->file('gambar')->store('soal_gambar', 'public');
         }
 
-        $opsi_jawaban = ($request->fase == 1) ? null : [1 => 'Opsi A', 2 => 'Opsi B', 3 => 'Opsi C', 4 => 'Opsi D'];
+        $opsi_jawaban = $request->fase == 1
+            ? null
+            : collect($request->input('opsi_jawaban', []))
+                ->map(fn ($option) => trim((string) $option))
+                ->filter(fn ($option) => $option !== '')
+                ->all();
 
         Question::create([
-            'criteria_id'     => $request->criteria_id,
             'teks_pertanyaan' => $request->teks_pertanyaan,
             'teks_awal'       => $request->fase == 4 ? $request->teks_awal : null,
             'gambar'          => $gambarPath,
             'fase'            => $request->fase,
             'tipe_opsi'       => 'text',
-            'opsi_jawaban'    => $opsi_jawaban,
+            'opsi_jawaban'    => $opsi_jawaban ?: null,
             'kode_indikator'  => $request->kode_indikator,
             'kunci_jawaban'   => $request->kunci_jawaban,
             'bobot'           => $request->fase == 4 ? ($request->bobot ?? 12) : null,
@@ -374,7 +387,6 @@ public function dashboard()
     {
         $request->validate([
             'teks_mentah' => 'required|string|min:20',
-            'criteria_id' => 'required|exists:criteria,id'
         ]);
 
         $apiKey = trim(env('GEMINI_API_KEY')); 
@@ -428,7 +440,6 @@ public function dashboard()
 
             foreach ($questionsArray as $q) {
                 Question::create([
-                    'criteria_id'     => $request->criteria_id,
                     'teks_pertanyaan' => $q['teks_pertanyaan'],
                     'fase'            => 2,
                     'tipe_opsi'       => 'text',
@@ -454,9 +465,8 @@ public function dashboard()
     public function editQuestion($id)
     {
         $question = Question::findOrFail($id);
-        $criteria = Criteria::all();
         
-        return view('admin.questions_edit', compact('question', 'criteria'));
+        return view('admin.questions_edit', compact('question'));
     }
 
     public function updateQuestion(Request $request, $id)
@@ -464,12 +474,13 @@ public function dashboard()
         $request->validate([
             'teks_pertanyaan' => 'required|string',
             'teks_awal'       => 'nullable|string|max:1000',
-            'criteria_id'     => 'required|exists:criteria,id',
             'fase'            => 'required|in:1,2,3,4',
             'bobot'           => 'nullable|integer|min:1|max:3600',
             'sembunyikan_teks' => 'nullable|boolean',
             'opsi_jawaban'    => 'nullable|array', 
+            'opsi_jawaban.*'  => 'nullable|string|max:1000',
             'kode_indikator'  => 'required|string|in:R,I,A,S,E,C,Gf,Gc,Gv,Gq,Gwm,Gs',
+            'kunci_jawaban'   => 'nullable|string|max:10',
             'gambar'          => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', 
         ]);
 
@@ -492,12 +503,12 @@ public function dashboard()
         }
 
         $question->update([
-            'criteria_id'     => $request->criteria_id,
             'teks_pertanyaan' => $request->teks_pertanyaan,
             'teks_awal'       => $request->fase == 4 ? $request->teks_awal : null,
             'fase'            => $request->fase,
             'kode_indikator'  => $request->kode_indikator,
             'opsi_jawaban'    => empty($opsiJawaban) ? null : $opsiJawaban, 
+            'kunci_jawaban'   => $request->fase == 1 ? null : $request->kunci_jawaban,
             'gambar'          => $gambarPath,
             'bobot'           => $request->fase == 4 ? ($request->bobot ?? 12) : null,
             'sembunyikan_teks' => $request->fase == 4 && $request->boolean('sembunyikan_teks'),

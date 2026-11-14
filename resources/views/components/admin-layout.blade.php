@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Panel - Rekomendasi Jurusan</title>
+    <title>Admin Panel - Rekomendasi Program Keahlian</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -28,7 +28,7 @@
             <div class="flex items-center justify-between h-20 px-5 border-b border-white/10">
                 <a href="{{ route('admin.dashboard') }}" class="text-lg font-bold tracking-wide flex items-center gap-3">
                     <span class="w-10 h-10 bg-cyan-400 text-slate-950 rounded-xl flex items-center justify-center font-black shadow-lg shadow-cyan-400/20">R</span>
-                    <span>Rekomendasi <span class="text-cyan-300">Jurusan</span></span>
+                    <span>Rekomendasi <span class="text-cyan-300">Program Keahlian</span></span>
                 </a>
                 <button @click="sidebarOpen = false" class="lg:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/10" aria-label="Tutup menu">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -88,7 +88,7 @@
                 </button>
                 
                 <div class="flex-1 px-3 sm:px-6">
-                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-600">Panel rekomendasi jurusan</p>
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-600">Panel rekomendasi Program Keahlian</p>
                     <h1 class="text-base sm:text-lg font-bold text-slate-900">{{ request()->routeIs('admin.dashboard') ? 'Ringkasan rekomendasi' : (request()->routeIs('admin.siswa') ? 'Data siswa' : 'Bank soal & AI') }}</h1>
                 </div>
 
@@ -106,7 +106,7 @@
             <!-- Page Content (Slot yang akan diisi oleh halaman lain) -->
             <main class="flex-1 overflow-y-auto bg-slate-100 p-4 sm:p-6 lg:p-8">
                 <!-- Flash Message Error/Success -->
-                @if (session('error') || session('success'))
+                @if (false && (session('error') || session('success')))
                     <div x-data="{ visible: true }" x-show="visible" x-transition class="mb-5 flex items-start gap-3 p-4 rounded-2xl border shadow-sm {{ session('error') ? 'bg-rose-50 border-rose-200 text-rose-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700' }}" role="alert">
                         <div class="mt-0.5 shrink-0">
                             @if (session('error'))
@@ -123,6 +123,8 @@
                 @endif
                 
                 {{ $slot }}
+                <x-flash-toast />
+                <x-confirm-dialog />
             </main>
         </div>
     </div>
