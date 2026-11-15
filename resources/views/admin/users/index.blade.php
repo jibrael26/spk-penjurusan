@@ -43,17 +43,17 @@
                 <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                     <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Rata-rata skor</p>
                     <p class="mt-1 text-2xl font-black text-slate-900">{{ $clusteringSummary['rata_rata_skor'] ?? 0 }}%</p>
-                    <p class="text-xs text-slate-400">profil terbaik</p>
+                    <p class="text-xs text-slate-400">model legacy</p>
                 </div>
                 <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                     <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Rata-rata margin</p>
                     <p class="mt-1 text-2xl font-black text-slate-900">{{ $clusteringSummary['rata_rata_margin'] ?? 0 }}%</p>
-                    <p class="text-xs text-slate-400">vs kandidat kedua</p>
+                    <p class="text-xs text-slate-400">model legacy</p>
                 </div>
                 <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                     <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Rata-rata yakin</p>
                     <p class="mt-1 text-2xl font-black text-emerald-700">{{ $clusteringSummary['rata_rata_keyakinan'] ?? 0 }}%</p>
-                    <p class="text-xs text-slate-400">indikator pemisahan</p>
+                    <p class="text-xs text-slate-400">model legacy</p>
                 </div>
                 <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
                     <p class="text-xs font-semibold uppercase tracking-wide text-amber-700">Perlu ditinjau</p>
@@ -67,7 +67,7 @@
                 <div class="mb-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                     <div>
                         <h3 class="text-lg font-semibold text-gray-800">Hasil Pengelompokan Profil</h3>
-                        <p class="text-sm text-gray-500 mt-1">Siswa mendapatkan rekomendasi berdasarkan kedekatan skor profil RIASEC dan CHC. Detail kinerja tersedia pada hasil asesmen siswa.</p>
+                        <p class="text-sm text-gray-500 mt-1">Siswa dikelompokkan menggunakan K-Means berdasarkan vektor fitur RIASEC dan CHC. Detail centroid dan evaluasi tersedia pada hasil asesmen siswa.</p>
                     </div>
                     <a href="{{ route('admin.export.kmeans') }}"
                        class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors">

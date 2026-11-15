@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\AssessmentScore;
 
@@ -38,14 +39,14 @@ class User extends Authenticatable
      */
     public function assessmentScore(): HasOne
     {
-        return $this->hasOne(AssessmentScore::class, 'user_id');
+        return $this->hasOne(AssessmentScore::class, 'user_id')->latestOfMany();
     }
 
     /**
      * Alias plural agar aman jika ada pemanggilan 'assessmentScores' di bagian kode lain
      */
-    public function assessmentScores(): HasOne
+    public function assessmentScores(): HasMany
     {
-        return $this->hasOne(AssessmentScore::class, 'user_id');
+        return $this->hasMany(AssessmentScore::class, 'user_id')->latest();
     }
 }

@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\AssessmentScore; 
 use App\Models\Question; 
 use App\Models\Criteria; 
+use App\Services\KMeansService;
 
 class AdminController extends Controller
 {
@@ -36,6 +37,46 @@ class AdminController extends Controller
     $chartLabels = json_encode($labels);
     $chartData = json_encode($totals);
 
+    $scatterByCluster = [];
+    $scatterCentroids = [];
+    $scatterAssessments = AssessmentScore::with('user')
+        ->whereNotNull('recommended_cluster')
+        ->whereHas('user', function ($query) {
+            $query->where('is_admin', false);
+        })
+        ->get();
+    $kmeansService = app(KMeansService::class);
+    foreach ($scatterAssessments as $assessment) {
+        $vector = $kmeansService->vectorFromAssessment($assessment);
+        if (!$vector) {
+            continue;
+        }
+
+        $cluster = $assessment->recommended_cluster;
+        $point = $kmeansService->projectTo2D($vector);
+        $scatterByCluster[$cluster][] = [
+            'x' => $point['x'],
+            'y' => $point['y'],
+            'name' => $assessment->user->name ?? 'Siswa',
+        ];
+    }
+
+    foreach ($scatterByCluster as $cluster => $points) {
+        $scatterCentroids[] = [
+            'x' => round((float) collect($points)->avg('x'), 2),
+            'y' => round((float) collect($points)->avg('y'), 2),
+            'name' => $cluster,
+        ];
+    }
+
+    $scatterSeries = collect($scatterByCluster)
+        ->map(fn (array $points, string $cluster) => [
+            'name' => $cluster,
+            'data' => $points,
+        ])
+        ->values()
+        ->all();
+
     // 2. Data 5 siswa terbaru yang menyelesaikan tes beserta relasi user
     $recentTests = AssessmentScore::with('user')
         ->whereHas('user', function ($query) {
@@ -53,6 +94,8 @@ class AdminController extends Controller
         'totals',
         'chartLabels', 
         'chartData', 
+        'scatterSeries',
+        'scatterCentroids',
         'recentTests'
     ));
 }
@@ -246,75 +289,11 @@ public function dashboard()
         $user = User::where('is_admin', false)->findOrFail($id);
 
         // Hapus data hasil assessment terkait jika ada
-        if ($user->assessmentScore) {$user->assessmentScore->delete();
-        }
+        $user->assessmentScores()->delete();
 
         $user->delete();
 
         return redirect()->back()->with('success', 'Data siswa berhasil dihapus secara permanen!');
-    }
-
-    // ==========================================
-    // FUNGSI HELPER ALGORITMA K-MEANS
-    // ==========================================
-    private function kMeansClustering($data,$k)
-    {
-        if (empty($data) || $k < 1) return [];
-
-        $centroids = [];$randomKeys = array_rand($data,$k);
-        if (!is_array($randomKeys)) $randomKeys = [$randomKeys];
-
-        foreach ($randomKeys as $key) {$centroids[] = $data[$key]['features'];
-        }
-
-        $clusters = [];
-        $oldClusters = [];$maxIter = 100;
-
-        for ($iter = 0; $iter < $maxIter; $iter++) {
-            $clusters = array_fill(0,$k, []);
-
-            foreach ($data as $item) {$minDist = null;
-                $closestCentroid = 0;
-
-                foreach ($centroids as $idx =>$centroid) {
-                    $dist =$this->euclideanDistance($item['features'],$centroid);
-                    if ($minDist === null || $dist <$minDist) {
-                        $minDist =$dist;
-                        $closestCentroid =$idx;
-                    }
-                }
-                $clusters[$closestCentroid][] =$item;
-            }
-
-            if ($clusters ===$oldClusters) break;
-            $oldClusters =$clusters;
-
-            foreach ($clusters as $idx =>$cluster) {
-                if (count($cluster) > 0) {
-                    $numFeatures = count($centroids[0]);
-                    $newCentroid = array_fill(0,$numFeatures, 0);
-
-                    foreach ($cluster as$item) {
-                        foreach ($item['features'] as$dim => $val) {$newCentroid[$dim] +=$val;
-                        }
-                    }
-
-                    foreach ($newCentroid as$dim => $val) {$centroids[$idx][$dim] = $val / count($cluster);
-                    }
-                }
-            }
-        }
-
-        return $clusters;
-    }
-
-    private function euclideanDistance($point1,$point2)
-    {
-        $sum = 0;
-        foreach ($point1 as $i =>$val) {
-            $sum += pow($val - $point2[$i], 2);
-        }
-        return sqrt($sum);
     }
 
     // ==========================================

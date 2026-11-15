@@ -144,25 +144,25 @@
                             <div>
                                 <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Transparansi rekomendasi</p>
                                 <h2 class="mt-1 text-lg font-bold text-slate-900">Seberapa kuat hasil pengelompokan?</h2>
-                                <p class="mt-1 text-sm text-slate-500">Skor menunjukkan tingkat kesesuaian profil Anda dengan setiap Program Keahlian. Nilai lebih tinggi berarti lebih sesuai.</p>
+                                <p class="mt-1 text-sm text-slate-500">Sistem menempatkan profil Anda ke centroid K-Means terdekat. Jarak yang lebih kecil berarti profil lebih dekat dengan cluster tersebut.</p>
                             </div>
                             <span class="inline-flex w-fit rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-bold text-emerald-700">
-                                Keyakinan {{ $performance['tingkat_keyakinan'] ?? 0 }}%
+                                Silhouette {{ data_get($performance, 'kmeans.silhouette', 0) }}
                             </span>
                         </div>
 
                         <div class="mt-5 grid gap-3 sm:grid-cols-3">
                             <div class="rounded-2xl bg-slate-50 p-4">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Skor tertinggi</p>
-                                <p class="mt-1 text-2xl font-black text-slate-900">{{ $performance['skor_tertinggi'] ?? 0 }}%</p>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Silhouette Score</p>
+                                <p class="mt-1 text-2xl font-black text-slate-900">{{ data_get($performance, 'kmeans.silhouette', 0) }}</p>
                             </div>
                             <div class="rounded-2xl bg-slate-50 p-4">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Jarak terdekat</p>
-                                <p class="mt-1 text-2xl font-black text-slate-900">{{ $performance['jarak_terdekat'] ?? 0 }}</p>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Jarak centroid</p>
+                                <p class="mt-1 text-2xl font-black text-slate-900">{{ data_get($performance, 'kmeans.jarak_centroid', 0) }}</p>
                             </div>
                             <div class="rounded-2xl bg-slate-50 p-4">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Selisih kandidat kedua</p>
-                                <p class="mt-1 text-2xl font-black text-slate-900">{{ $performance['margin_kandidat_kedua'] ?? 0 }}%</p>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Iterasi K-Means</p>
+                                <p class="mt-1 text-2xl font-black text-slate-900">{{ data_get($performance, 'kmeans.iterasi', 0) }}</p>
                             </div>
                         </div>
 
@@ -220,6 +220,41 @@
                     </div>
                 </div>
             @endif
+
+            <section id="riwayat-assessment" class="mt-8 scroll-mt-24">
+                <div class="mb-4">
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-indigo-600">Riwayat siswa</p>
+                    <h2 class="mt-1 text-xl font-black text-slate-900">Riwayat Assessment</h2>
+                    <p class="mt-1 text-sm text-slate-500">Seluruh hasil assessment yang pernah Anda selesaikan.</p>
+                </div>
+
+                @forelse($assessmentHistory as $assessment)
+                    <article class="mb-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                    {{ $assessment->created_at?->translatedFormat('d F Y, H:i') }}
+                                </p>
+                                <h3 class="mt-1 font-bold text-indigo-700">{{ $assessment->recommended_cluster }}</h3>
+                            </div>
+                            <div class="flex gap-3 text-center">
+                                <div class="rounded-xl bg-slate-50 px-4 py-2">
+                                    <p class="text-xs text-slate-500">Skor</p>
+                                    <p class="font-bold text-slate-900">{{ $assessment->score ?? 0 }}%</p>
+                                </div>
+                                <div class="rounded-xl bg-slate-50 px-4 py-2">
+                                    <p class="text-xs text-slate-500">Cluster</p>
+                                    <p class="font-bold text-slate-900">{{ data_get($assessment->details, 'kinerja_rekomendasi.kmeans.cluster_index', '-') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                @empty
+                    <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-8 text-center">
+                        <p class="font-semibold text-slate-700">Belum ada riwayat assessment.</p>
+                    </div>
+                @endforelse
+            </section>
         </div>
     </div>
 </x-app-layout>

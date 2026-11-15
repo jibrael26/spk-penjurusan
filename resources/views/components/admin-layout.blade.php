@@ -27,8 +27,11 @@
             <!-- Logo Area -->
             <div class="flex items-center justify-between h-20 px-5 border-b border-white/10">
                 <a href="{{ route('admin.dashboard') }}" class="text-lg font-bold tracking-wide flex items-center gap-3">
-                    <span class="w-10 h-10 bg-cyan-400 text-slate-950 rounded-xl flex items-center justify-center font-black shadow-lg shadow-cyan-400/20">R</span>
-                    <span>Rekomendasi <span class="text-cyan-300">Program Keahlian</span></span>
+                    <img src="{{ asset('logo-smk.png') }}" alt="Logo SMK Negeri 1 Tatapaan" class="h-10 w-10 rounded-xl object-contain shadow-lg shadow-cyan-400/20">
+                    <span class="flex flex-col leading-tight">
+                        <span>Rekomendasi</span>
+                        <span class="text-cyan-300">Program Keahlian</span>
+                    </span>
                 </a>
                 <button @click="sidebarOpen = false" class="lg:hidden p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/10" aria-label="Tutup menu">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>

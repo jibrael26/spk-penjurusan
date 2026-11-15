@@ -30,7 +30,14 @@
                         </span>
                     </x-nav-link>
 
-                    
+                    <x-nav-link :href="route('assessment.index') . '#riwayat-assessment'" :active="request()->routeIs('assessment.index')" class="rounded-xl px-4 py-2 hover:bg-indigo-50 hover:text-indigo-600 transition-colors font-semibold">
+                        <span class="inline-flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {{ __('Riwayat Assessment') }}
+                        </span>
+                    </x-nav-link>
 
                     <!-- Akses Pintas Admin (Disederhanakan) -->
                     @if (Auth::user()->is_admin)
@@ -110,8 +117,15 @@
                     {{ __('Beranda') }}
                 </span>
             </x-responsive-nav-link>
-            
-            
+
+            <x-responsive-nav-link :href="route('assessment.index') . '#riwayat-assessment'" :active="request()->routeIs('assessment.index')" class="rounded-xl">
+                <span class="inline-flex items-center gap-3">
+                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {{ __('Riwayat Assessment') }}
+                </span>
+            </x-responsive-nav-link>
 
             @if (Auth::user()->is_admin)
                 <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')" class="rounded-xl text-amber-600">

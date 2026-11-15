@@ -34,9 +34,11 @@ class KMeansClusteringExport implements FromCollection, WithHeadings, WithMappin
             'Skor K03',
             'Skor K04',
             'Skor K05',
-            'Jarak Terdekat',
-            'Margin Kandidat Kedua',
-            'Tingkat Keyakinan',
+            'Jarak ke Centroid',
+            'Jumlah Cluster (K)',
+            'Iterasi K-Means',
+            'SSE',
+            'Silhouette Score',
             // 'Tanggal Assessment',
         ];
     }
@@ -53,9 +55,11 @@ class KMeansClusteringExport implements FromCollection, WithHeadings, WithMappin
             $assessment->k03 ?? 0,
             $assessment->k04 ?? 0,
             $assessment->k05 ?? 0,
-            data_get($assessment->details, 'kinerja_rekomendasi.jarak_terdekat', 'N/A'),
-            data_get($assessment->details, 'kinerja_rekomendasi.margin_kandidat_kedua', 'N/A'),
-            data_get($assessment->details, 'kinerja_rekomendasi.tingkat_keyakinan', 'N/A'),
+            data_get($assessment->details, 'kinerja_rekomendasi.kmeans.jarak_centroid', 'N/A'),
+            data_get($assessment->details, 'kinerja_rekomendasi.kmeans.k', 'N/A'),
+            data_get($assessment->details, 'kinerja_rekomendasi.kmeans.iterasi', 'N/A'),
+            data_get($assessment->details, 'kinerja_rekomendasi.kmeans.sse', 'N/A'),
+            data_get($assessment->details, 'kinerja_rekomendasi.kmeans.silhouette', 'N/A'),
             // $assessment->created_at?->format('d-m-Y H:i') ?? 'N/A',
         ];
     }

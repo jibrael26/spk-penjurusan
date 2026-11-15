@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Question;
 use App\Models\Criteria;
 use App\Models\AssessmentScore;
+use App\Services\KMeansService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -46,9 +47,12 @@ class AssessmentController extends Controller
     public function index()
     {
         $latestScore = AssessmentScore::where('user_id', auth()->id())->latest()->first();
+        $assessmentHistory = AssessmentScore::where('user_id', auth()->id())
+            ->latest()
+            ->get();
         $riasecInsight = $this->getRiasecInsight($latestScore);
 
-        return view('assessment.index', compact('latestScore', 'riasecInsight'));
+        return view('assessment.index', compact('latestScore', 'assessmentHistory', 'riasecInsight'));
     }
 
     // ================= FASE 1 =================
@@ -112,7 +116,7 @@ class AssessmentController extends Controller
 
         // Logika Waktu: 1 soal = 1 menit
         $jumlahSoal = $questions->count();
-        $timeLimitInSeconds = $jumlahSoal * 60;
+        $timeLimitInSeconds = $jumlahSoal * 5;
 
         return view('assessment.fase3', compact('questions', 'timeLimitInSeconds'));
     }
@@ -295,15 +299,31 @@ class AssessmentController extends Controller
             }
         }
 
-        $recommendedJurusanId = $criteriaMap[$recommendedKode] ?? null;
-        $recommendedCluster = $this->majorProfiles[$recommendedKode]['name'] ?? null;
-        $clusteringMetrics = $this->buildClusteringMetrics($scoresPerCriteria, $recommendedKode);
+        $currentVector = array_merge($riasecScores, $chcScores);
+        $criteria = Criteria::orderBy('id')->get();
+        $historicalAssessments = AssessmentScore::whereHas('user', function ($query) {
+            $query->where('is_admin', false);
+        })->get();
+        $kmeans = app(KMeansService::class)->trainAndAssign(
+            $historicalAssessments,
+            $currentVector,
+            $criteria,
+            $this->majorProfiles
+        );
+        $recommendedKode = $kmeans['kode_jurusan'];
+        $recommendedJurusanId = $criteria->firstWhere('kode_kriteria', strtoupper($recommendedKode))?->id
+            ?? $criteriaMap[$recommendedKode]
+            ?? null;
+        $recommendedCluster = $kmeans['nama_jurusan'];
+        $clusteringMetrics = array_merge(
+            $this->buildClusteringMetrics($scoresPerCriteria, $recommendedKode),
+            ['algoritma' => 'K-Means', 'kmeans' => $kmeans]
+        );
 
-        AssessmentScore::updateOrCreate(
-            ['user_id' => auth()->id()],
-            array_merge(
-                $normalizedScores,
-                [
+        AssessmentScore::create(array_merge(
+            $normalizedScores,
+            [
+                'user_id'              => auth()->id(),
                     'criteria_id'         => $recommendedJurusanId,
                     'score'               => $highestDetailScore,
                     'details'             => [
@@ -314,10 +334,9 @@ class AssessmentController extends Controller
                     'riasec_scores'       => $riasecScores,
                     'chc_scores'          => $chcScores,
                     'answers'             => $answers,
-                    'recommended_cluster' => $recommendedCluster
-                ]
-            )
-        );
+                    'recommended_cluster' => $recommendedCluster,
+            ]
+        ));
 
         Session::forget('fase1_answers');
         Session::forget('fase2_answers');

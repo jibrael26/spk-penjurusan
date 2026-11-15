@@ -68,6 +68,16 @@
         </div>
     </div>
 
+    <div class="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-100 px-6 py-5">
+            <h3 class="text-base font-bold text-slate-900">Visualisasi 2D Cluster K-Means</h3>
+            <p class="mt-1 text-xs text-slate-500">Setiap titik adalah siswa. Posisi yang berdekatan menunjukkan profil yang mirip. Titik berlian menunjukkan rata-rata posisi setiap cluster.</p>
+        </div>
+        <div class="min-h-[380px] p-5 sm:p-6">
+            <div id="kmeansScatterChart" class="w-full min-h-[350px]"></div>
+        </div>
+    </div>
+
     <!-- AREA BARU: Grafik & Aktivitas Terbaru -->
     <div class="mb-8 grid grid-cols-1 gap-5 xl:grid-cols-3">
         
@@ -198,6 +208,88 @@
 <!-- Script Inisialisasi Grafik ApexCharts -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        var scatterSeries = @json($scatterSeries ?? []);
+        var scatterCentroids = @json($scatterCentroids ?? []);
+        if (document.querySelector("#kmeansScatterChart")) {
+            var scatterChart = new ApexCharts(document.querySelector("#kmeansScatterChart"), {
+                chart: {
+                    type: 'scatter',
+                    height: 360,
+                    toolbar: { show: true },
+                    zoom: { enabled: true },
+                    animations: { enabled: false }
+                },
+                series: scatterSeries.concat([{
+                    name: 'Centroid',
+                    data: scatterCentroids
+                }]),
+                colors: ['#06b6d4', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444', '#0f172a'],
+                markers: {
+                    size: 5,
+                    discrete: scatterCentroids.map(function (_, index) {
+                        return {
+                            seriesIndex: scatterSeries.length,
+                            dataPointIndex: index,
+                            fillColor: '#0f172a',
+                            strokeColor: '#0f172a',
+                            size: 9,
+                            shape: 'diamond'
+                        };
+                    }),
+                    hover: { size: 7 }
+                },
+                xaxis: {
+                    min: 0,
+                    max: 100,
+                    tickAmount: 5,
+                    title: { text: 'Rata-rata skor RIASEC' },
+                    labels: {
+                        formatter: function (value) { return Math.round(value) + '%'; }
+                    }
+                },
+                yaxis: {
+                    min: 0,
+                    max: 100,
+                    tickAmount: 5,
+                    title: { text: 'Rata-rata skor CHC' },
+                    labels: {
+                        formatter: function (value) { return Math.round(value) + '%'; }
+                    }
+                },
+                annotations: {
+                    xaxis: [{
+                        x: 50,
+                        borderColor: '#cbd5e1',
+                        strokeDashArray: 4,
+                        label: {
+                            text: 'RIASEC 50%',
+                            style: { color: '#475569', background: '#e2e8f0' }
+                        }
+                    }],
+                    yaxis: [{
+                        y: 50,
+                        borderColor: '#cbd5e1',
+                        strokeDashArray: 4,
+                        label: {
+                            text: 'CHC 50%',
+                            style: { color: '#475569', background: '#e2e8f0' }
+                        }
+                    }]
+                },
+                tooltip: {
+                    custom: function ({ seriesIndex, dataPointIndex, w }) {
+                        var point = w.config.series[seriesIndex].data[dataPointIndex];
+                        return '<div class="px-3 py-2 text-xs"><strong>' + w.config.series[seriesIndex].name +
+                            '</strong><br>' + (point.name || 'Siswa') + '<br>RIASEC: ' + point.x +
+                            '%<br>CHC: ' + point.y + '%</div>';
+                    }
+                },
+                legend: { position: 'bottom' },
+                dataLabels: { enabled: false }
+            });
+            scatterChart.render();
+        }
+
         var options = {
             series: [{
                 name: 'Jumlah Siswa',
