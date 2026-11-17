@@ -31,7 +31,7 @@
                         <fieldset class="rounded-2xl border border-slate-200 border-l-4 border-l-blue-500 bg-white p-4 shadow-sm sm:p-6">
                             <div class="w-full rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-3 text-sm font-bold leading-6 text-slate-800 sm:px-5 sm:text-base">
                                 <span class="mr-1 text-blue-600">{{ $globalIndex++ }}.</span>
-                                <span class="break-words">{{ $question->teks_pertanyaan }}</span>
+                                <span class="break-words whitespace-pre-line">{{ $question->teks_pertanyaan }}</span>
                             </div>
                             @if($question->gambar)
                                 <img src="{{ asset('storage/' . $question->gambar) }}" alt="Ilustrasi pertanyaan" class="mt-4 max-h-56 w-full rounded-xl border border-slate-200 object-contain">

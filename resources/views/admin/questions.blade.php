@@ -292,7 +292,7 @@
                                                     <span class="rounded-md bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700">{{ $q->bobot }} detik</span>
                                                 @endif
                                             </div>
-                                            <div class="line-clamp-2 font-medium leading-6" title="{{ $q->teks_pertanyaan }}">
+                                            <div class="line-clamp-2 whitespace-pre-line font-medium leading-6" title="{{ $q->teks_pertanyaan }}">
                                                 {{ $q->teks_pertanyaan }}
                                             </div>
                                             @if($q->teks_awal)

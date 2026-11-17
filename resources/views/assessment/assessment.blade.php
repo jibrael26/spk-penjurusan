@@ -30,7 +30,7 @@
                     <div class="bg-white p-6 rounded-lg shadow-md mb-6 border-l-4 border-blue-500">
                         <h3 class="rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-3 font-semibold text-lg leading-7 text-gray-800">
                             {{ $globalIndex++ }}. 
-                            {!! nl2br(e($question->teks_pertanyaan)) !!}
+                            <span class="whitespace-pre-line">{{ $question->teks_pertanyaan }}</span>
                         </h3>
 
                         <!-- Tampilkan Gambar Soal Jika Ada -->
@@ -68,7 +68,7 @@
                     <div class="bg-white p-6 rounded-lg shadow-md mb-6 border-l-4 border-indigo-500">
                         <h3 class="rounded-xl border border-indigo-100 bg-indigo-50/60 px-4 py-3 font-semibold text-lg leading-7 text-gray-800">
                             {{ $globalIndex++ }}. 
-                            {!! nl2br(e($question->teks_pertanyaan)) !!}
+                            <span class="whitespace-pre-line">{{ $question->teks_pertanyaan }}</span>
                         </h3>
 
                         <!-- Tampilkan Gambar Soal Jika Ada -->
