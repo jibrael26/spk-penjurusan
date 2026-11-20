@@ -188,8 +188,8 @@
                                     <!-- Rekomendasi Program Keahlian -->
                                     <td class="py-4 px-6">
                                         @php
-                                            $score = $user->assessmentScore ?? $user->assessmentScores;
-                                            $major = $score->recommended_cluster ?? $score->recommended_major ?? $user->recommended_major ?? null;
+                                            $score = $user->assessmentScore;
+                                            $major = $score?->recommended_cluster ?? $score?->recommended_major ?? $user->recommended_major ?? null;
                                         @endphp
 
                                         @if($major)
