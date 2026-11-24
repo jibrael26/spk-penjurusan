@@ -242,13 +242,16 @@
         <!-- Tabel Daftar Soal -->
         <div>
             <div class="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-                <div class="flex flex-col gap-3 border-b border-gray-100 bg-slate-50/80 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex flex-col gap-3 border-b border-gray-100 bg-gradient-to-r from-slate-50 to-white px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h3 class="text-base font-semibold text-gray-900">Daftar Pertanyaan Aktif</h3>
-                        <p class="text-xs text-gray-500 mt-1">Gunakan filter untuk menemukan soal dengan cepat.</p>
+                        <h3 class="text-base font-semibold text-gray-900">Daftar Pertanyaan</h3>
+                        <p class="mt-1 text-xs text-gray-500">
+                            Menampilkan {{ $questions->firstItem() ?? 0 }}–{{ $questions->lastItem() ?? 0 }} dari {{ $questions->total() }} soal, lengkap dengan parameter dan konfigurasi.
+                        </p>
                     </div>
-                    <span class="text-xs font-medium bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full whitespace-nowrap">
-                        Total: {{ isset($questions) ? $questions->total() : 0 }}
+                    <span class="inline-flex w-fit items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+                        <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+                        {{ $questions->total() }} soal tersimpan
                     </span>
                 </div>
 
@@ -286,47 +289,110 @@
                 </form>
                 
                 <div class="overflow-x-auto flex-grow">
-                    <table class="min-w-[760px] w-full text-left text-sm text-gray-600">
-                        <thead class="bg-gray-50/50 border-b border-gray-100 text-gray-500 uppercase tracking-wider">
+                    @php
+                        $indicatorLabels = [
+                            'r' => 'Realistic',
+                            'i' => 'Investigative',
+                            'a' => 'Artistic',
+                            's' => 'Social',
+                            'e' => 'Enterprising',
+                            'c' => 'Conventional',
+                            'gf' => 'Fluid Reasoning',
+                            'gc' => 'Comprehension-Knowledge',
+                            'gv' => 'Visual Processing',
+                            'gq' => 'Quantitative Knowledge',
+                            'gwm' => 'Short-Term Working Memory',
+                            'gs' => 'Processing Speed',
+                        ];
+                        $answerLabels = [1 => 'A', 2 => 'B', 3 => 'C', 4 => 'D'];
+                    @endphp
+                    <table class="min-w-[1050px] w-full text-left text-sm text-gray-600">
+                        <thead class="border-b border-gray-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
                             <tr>
-                                <th class="w-[46%] px-6 py-4 font-semibold">Pertanyaan & parameter</th>
-                                <th class="px-6 py-4 text-center font-semibold">Fase</th>
-                                <th class="px-6 py-4 text-center font-semibold">Aksi</th>
+                                <th class="w-[38%] px-6 py-4">Pertanyaan</th>
+                                <th class="w-[23%] px-6 py-4">Parameter</th>
+                                <th class="px-6 py-4 text-center">Fase</th>
+                                <th class="w-[22%] px-6 py-4">Konfigurasi</th>
+                                <th class="px-6 py-4 text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @isset($questions)
                                 @forelse ($questions as $q)
-                                    <tr class="transition-colors hover:bg-blue-50/30">
-                                        <td class="px-6 py-4 text-gray-900">
-                                            <div class="mb-2 flex flex-wrap items-center gap-2">
-                                                @if($q->kode_indikator)
-                                                    <span class="rounded-md bg-blue-50 px-2 py-1 text-[11px] font-bold text-blue-700">{{ $q->kode_indikator }}</span>
+                                    @php
+                                        $indicatorKey = strtolower(preg_replace('/[0-9]+/', '', (string) $q->kode_indikator));
+                                        $phaseDetails = [
+                                            1 => ['label' => 'Minat', 'class' => 'bg-emerald-50 text-emerald-700 ring-emerald-100'],
+                                            2 => ['label' => 'Bakat dasar', 'class' => 'bg-amber-50 text-amber-700 ring-amber-100'],
+                                            3 => ['label' => 'Bakat lanjutan', 'class' => 'bg-blue-50 text-blue-700 ring-blue-100'],
+                                            4 => ['label' => 'Tampilan sementara', 'class' => 'bg-rose-50 text-rose-700 ring-rose-100'],
+                                        ];
+                                        $phase = $phaseDetails[$q->fase] ?? null;
+                                        $options = is_array($q->opsi_jawaban) ? $q->opsi_jawaban : [];
+                                        $answerLabel = $answerLabels[(int) $q->kunci_jawaban] ?? null;
+                                    @endphp
+                                    <tr class="transition-colors hover:bg-blue-50/50">
+                                        <td class="px-6 py-5 align-top">
+                                            <div class="mb-2 flex items-center gap-2">
+                                                <span class="rounded-lg bg-slate-100 px-2 py-1 text-[10px] font-bold tracking-wide text-slate-500">#{{ $q->id }}</span>
+                                                @if($q->gambar)
+                                                    <span class="inline-flex items-center gap-1 rounded-lg bg-violet-50 px-2 py-1 text-[10px] font-semibold text-violet-700" title="Memiliki gambar pendukung">
+                                                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                                        Gambar
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            <p class="line-clamp-3 whitespace-pre-line font-medium leading-6 text-slate-800" title="{{ $q->teks_pertanyaan }}">{{ $q->teks_pertanyaan }}</p>
+                                            @if($q->teks_awal)
+                                                <p class="mt-2 line-clamp-1 border-l-2 border-amber-300 pl-2 text-xs text-slate-500" title="{{ $q->teks_awal }}">
+                                                    Teks awal: {{ $q->teks_awal }}
+                                                </p>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-5 align-top">
+                                            @if($q->kode_indikator)
+                                                <div class="flex items-start gap-2">
+                                                    <span class="inline-flex shrink-0 rounded-lg bg-blue-50 px-2.5 py-1.5 text-xs font-bold text-blue-700 ring-1 ring-inset ring-blue-100">{{ $q->kode_indikator }}</span>
+                                                    <div class="min-w-0">
+                                                        <p class="font-semibold leading-5 text-slate-700">{{ $indicatorLabels[$indicatorKey] ?? 'Parameter lainnya' }}</p>
+                                                        <p class="mt-1 text-[10px] font-medium uppercase tracking-wide text-slate-400">{{ $q->fase == 1 ? 'RIASEC · Minat' : 'CHC · Bakat' }}</p>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <span class="text-xs text-slate-400">Parameter belum diatur</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-5 text-center align-top">
+                                            @if($phase)
+                                                <span class="inline-flex flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs font-bold ring-1 ring-inset {{ $phase['class'] }}">
+                                                    <span>Fase {{ $q->fase }}</span>
+                                                    <span class="text-[10px] font-medium">{{ $phase['label'] }}</span>
+                                                </span>
+                                            @else
+                                                <span class="text-xs text-slate-400">Fase tidak diketahui</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-5 align-top">
+                                            <div class="flex flex-wrap gap-1.5">
+                                                @if($q->fase == 1)
+                                                    <span class="rounded-lg bg-slate-50 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 ring-1 ring-inset ring-slate-200">Skala minat</span>
+                                                @elseif(count($options))
+                                                    <span class="rounded-lg bg-slate-50 px-2.5 py-1.5 text-[11px] font-medium text-slate-600 ring-1 ring-inset ring-slate-200">{{ count($options) }} opsi jawaban</span>
+                                                @else
+                                                    <span class="rounded-lg bg-slate-50 px-2.5 py-1.5 text-[11px] font-medium text-slate-500 ring-1 ring-inset ring-slate-200">Belum ada opsi</span>
+                                                @endif
+                                                @if($answerLabel)
+                                                    <span class="rounded-lg bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-100">Kunci {{ $answerLabel }}</span>
+                                                @elseif($q->fase != 1)
+                                                    <span class="rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-700 ring-1 ring-inset ring-amber-100">Kunci belum diatur</span>
                                                 @endif
                                                 @if($q->fase == 4 && $q->bobot)
-                                                    <span class="rounded-md bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700">{{ $q->bobot }} detik</span>
+                                                    <span class="rounded-lg bg-orange-50 px-2.5 py-1.5 text-[11px] font-medium text-orange-700 ring-1 ring-inset ring-orange-100">{{ $q->bobot }} detik</span>
                                                 @endif
                                             </div>
-                                            <div class="line-clamp-2 whitespace-pre-line font-medium leading-6" title="{{ $q->teks_pertanyaan }}">
-                                                {{ $q->teks_pertanyaan }}
-                                            </div>
-                                            @if($q->teks_awal)
-                                                <div class="mt-1 line-clamp-1 text-xs text-gray-400">Teks awal: {{ $q->teks_awal }}</div>
-                                            @endif
                                         </td>
-                                        <td class="px-6 py-4 text-center">
-                                            @if($q->fase == 1)
-                                                <span class="bg-emerald-50 text-emerald-700 py-1 px-2.5 rounded-full text-xs font-medium">Fase 1</span>
-                                            @elseif($q->fase == 2)
-                                                <span class="bg-amber-50 text-amber-700 py-1 px-2.5 rounded-full text-xs font-medium">Fase 2</span>
-                                            @elseif($q->fase == 3)
-                                                <span class="px-2 py-1 text-xs font-bold bg-blue-100 text-blue-700 rounded-full">Fase 3</span>
-                                            @elseif($q->fase == 4)
-                                                <span class="px-2 py-1 text-xs font-bold bg-rose-100 text-rose-700 rounded-full">Fase 4</span>
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 text-center">
-                                            <div class="flex items-center justify-center space-x-2">
+                                        <td class="px-6 py-5 align-top">
+                                            <div class="flex items-center justify-center gap-2">
                                                 <button type="button" data-question="{{ base64_encode(json_encode($q)) }}" @click="openEditModal(JSON.parse(atob($el.dataset.question)))" class="p-1.5 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition" title="Edit Soal">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                                 </button>
@@ -342,8 +408,19 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="px-6 py-12 text-center text-gray-500">
-                                            Belum ada soal di dalam database.
+                                        <td colspan="5" class="px-6 py-14 text-center">
+                                            <div class="mx-auto flex max-w-sm flex-col items-center">
+                                                <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>
+                                                </span>
+                                                <p class="mt-3 font-semibold text-slate-800">{{ request()->filled('search') || request()->filled('fase') ? 'Tidak ada soal yang cocok' : 'Belum ada soal' }}</p>
+                                                <p class="mt-1 text-xs leading-5 text-slate-500">
+                                                    {{ request()->filled('search') || request()->filled('fase') ? 'Coba ubah kata kunci atau reset filter untuk melihat soal lainnya.' : 'Tambahkan pertanyaan pertama untuk mulai membangun bank soal.' }}
+                                                </p>
+                                                @if(request()->filled('search') || request()->filled('fase'))
+                                                    <a href="{{ route('admin.pertanyaan') }}" class="mt-3 text-xs font-semibold text-blue-600 hover:text-blue-800">Reset filter</a>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforelse

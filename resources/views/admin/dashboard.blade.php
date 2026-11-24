@@ -148,33 +148,90 @@
         <div class="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
                 <h3 class="text-base font-bold text-slate-900">Aktivitas Tes Terbaru</h3>
-                <p class="mt-1 text-xs text-slate-500">Lima hasil assessment terbaru dari siswa.</p>
+                <p class="mt-1 text-xs text-slate-500">Lima hasil assessment terbaru beserta minat dan bakat dominan siswa.</p>
             </div>
             <a href="{{ route('admin.siswa') }}" class="text-sm font-semibold text-cyan-600 hover:text-cyan-800 transition-colors">Lihat semua siswa <span aria-hidden="true">→</span></a>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-[700px] w-full text-left text-sm text-slate-600">
+            @php
+                $riasecLabels = [
+                    'r' => 'Realistic (R)',
+                    'i' => 'Investigative (I)',
+                    'a' => 'Artistic (A)',
+                    's' => 'Social (S)',
+                    'e' => 'Enterprising (E)',
+                    'c' => 'Conventional (C)',
+                ];
+                $chcLabels = [
+                    'gf' => 'Fluid Reasoning (Gf)',
+                    'gc' => 'Comprehension-Knowledge (Gc)',
+                    'gv' => 'Visual Processing (Gv)',
+                    'gq' => 'Quantitative Knowledge (Gq)',
+                    'gwm' => 'Short-Term Working Memory (Gwm)',
+                    'gs' => 'Processing Speed (Gs)',
+                ];
+            @endphp
+            <table class="min-w-[820px] w-full text-left text-sm text-slate-600">
                 <thead class="bg-slate-50 text-xs uppercase font-semibold text-slate-500 border-b border-slate-200">
                     <tr>
-                        <th class="px-6 py-4">Nama Siswa</th>
-                        <th class="px-6 py-4">Waktu Selesai</th>
+                        <th class="px-6 py-4">Siswa</th>
+                        <th class="px-6 py-4">Profil Dominan</th>
                         <th class="px-6 py-4">Rekomendasi Program Keahlian</th>
                         <th class="px-6 py-4 text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse($recentTests as $test)
+                        @php
+                            $topRiasec = collect($test->riasec_scores ?? [])
+                                ->only(array_keys($riasecLabels))
+                                ->filter(fn ($score) => is_numeric($score))
+                                ->sortDesc()
+                                ->keys()
+                                ->first();
+                            $topChc = collect($test->chc_scores ?? [])
+                                ->only(array_keys($chcLabels))
+                                ->filter(fn ($score) => is_numeric($score))
+                                ->sortDesc()
+                                ->keys()
+                                ->first();
+                        @endphp
                         <tr class="transition-colors hover:bg-cyan-50/30">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     <span class="flex h-9 w-9 items-center justify-center rounded-full bg-cyan-50 text-xs font-bold text-cyan-700">
                                         {{ strtoupper(substr($test->user?->name ?? '?', 0, 1)) }}
                                     </span>
-                                    <span class="font-semibold text-slate-900">{{ $test->user?->name ?? 'Pengguna tidak ditemukan' }}</span>
+                                    <div class="min-w-0">
+                                        <p class="font-semibold text-slate-900">{{ $test->user?->name ?? 'Pengguna tidak ditemukan' }}</p>
+                                        @if($test->user?->email)
+                                            <p class="mt-0.5 truncate text-xs text-slate-500">{{ $test->user->email }}</p>
+                                        @endif
+                                    </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-slate-500">
-                                {{ $test->created_at?->format('d M Y, H:i') ?? 'Waktu tidak tersedia' }}
+                            <td class="px-6 py-4">
+                                <div class="space-y-2">
+                                    @if($topRiasec)
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-10 text-[10px] font-bold uppercase tracking-wide text-slate-400">Minat</span>
+                                            <span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                                                {{ $riasecLabels[$topRiasec] }} · {{ number_format((float) $test->riasec_scores[$topRiasec], 1) }}%
+                                            </span>
+                                        </div>
+                                    @endif
+                                    @if($topChc)
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-10 text-[10px] font-bold uppercase tracking-wide text-slate-400">Bakat</span>
+                                            <span class="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">
+                                                {{ $chcLabels[$topChc] }} · {{ number_format((float) $test->chc_scores[$topChc], 1) }}%
+                                            </span>
+                                        </div>
+                                    @endif
+                                    @unless($topRiasec || $topChc)
+                                        <span class="text-xs text-slate-400">Profil belum tersedia</span>
+                                    @endunless
+                                </div>
                             </td>
                             <td class="px-6 py-4">
                                 @if($test->recommended_cluster)
