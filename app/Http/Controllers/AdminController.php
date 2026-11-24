@@ -317,7 +317,28 @@ public function dashboard()
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.questions', compact('questions'));
+        $randomizeQuestions = DB::table('assessment_settings')
+            ->where('key', 'randomize_questions')
+            ->value('value') !== '0';
+
+        return view('admin.questions', compact('questions', 'randomizeQuestions'));
+    }
+
+    public function toggleQuestionRandomization(Request $request)
+    {
+        $randomize = $request->boolean('randomize');
+
+        DB::table('assessment_settings')->updateOrInsert(
+            ['key' => 'randomize_questions'],
+            ['value' => $randomize ? '1' : '0', 'created_at' => now(), 'updated_at' => now()]
+        );
+
+        return back()->with(
+            'success',
+            $randomize
+                ? 'Urutan soal acak telah diaktifkan untuk semua fase.'
+                : 'Urutan soal acak telah dinonaktifkan untuk semua fase.'
+        );
     }
 
     public function storeQuestion(Request $request)

@@ -70,6 +70,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/questions', [AdminController::class, 'questions'])->name('pertanyaan');
     Route::post('/questions', [AdminController::class, 'storeQuestion'])->name('questions.store');
     Route::post('/questions/generate', [AdminController::class, 'generateQuestions'])->name('questions.generate');
+    Route::post('/questions/randomize', [AdminController::class, 'toggleQuestionRandomization'])->name('questions.randomize');
     
     // Fitur Aksi Tambahan: Edit & Hapus Pertanyaan
     Route::get('/questions/{id}/edit', [AdminController::class, 'editQuestion'])->name('questions.edit');

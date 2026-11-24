@@ -351,6 +351,15 @@ class AssessmentController extends Controller
         $query = $withCriteria ? Question::with('criteria') : Question::query();
         $questions = $query->where('fase', $fase)->get();
         $sessionKey = 'assessment_fase_' . $fase . '_question_order';
+        $randomizeQuestions = \Illuminate\Support\Facades\DB::table('assessment_settings')
+            ->where('key', 'randomize_questions')
+            ->value('value') !== '0';
+
+        if (!$randomizeQuestions) {
+            Session::forget($sessionKey);
+            return $questions->sortBy('id')->values();
+        }
+
         $storedOrder = session($sessionKey);
 
         if (!is_array($storedOrder)) {

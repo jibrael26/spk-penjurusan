@@ -9,6 +9,21 @@
             <p class="mt-2 max-w-2xl text-sm text-gray-500">Kelola pertanyaan, parameter RIASEC/CHC, opsi jawaban, dan konfigurasi tampilan soal.</p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
+            <form action="{{ route('admin.questions.randomize') }}" method="POST">
+                @csrf
+                <input type="hidden" name="randomize" value="{{ $randomizeQuestions ? '0' : '1' }}">
+                <button type="submit" class="group inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" aria-pressed="{{ $randomizeQuestions ? 'true' : 'false' }}">
+                    <span class="relative inline-flex h-7 w-12 shrink-0 rounded-full transition-colors duration-200 {{ $randomizeQuestions ? 'bg-emerald-500' : 'bg-slate-300' }}">
+                        <span class="absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 {{ $randomizeQuestions ? 'left-6' : 'left-1' }}"></span>
+                    </span>
+                    <span>
+                        <span class="block text-left text-xs text-slate-400">Urutan soal</span>
+                        <span class="block text-left {{ $randomizeQuestions ? 'text-emerald-700' : 'text-slate-700' }}">
+                            {{ $randomizeQuestions ? 'Acak aktif' : 'Tidak acak' }}
+                        </span>
+                    </span>
+                </button>
+            </form>
             <div class="inline-flex w-fit items-center gap-2 rounded-full bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700">
                 <span class="h-2 w-2 rounded-full bg-blue-500"></span>
                 {{ isset($questions) ? $questions->total() : 0 }} soal tersimpan
